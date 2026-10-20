@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f8f7f4">
+    <meta name="description" content="Temukan cerita sehari-hari dalam komik pilihan Ruang Komik.">
+    <title>Ruang Komik — Cerita untuk dinikmati</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="komik.html" aria-label="Ruang Komik, beranda"><span class="brand-mark" aria-hidden="true">R</span><span>ruang<span class="brand-light">komik</span></span></a>
+        <nav aria-label="Navigasi utama">
+            <a href="komik.html" aria-current="page">Beranda</a>
+            <a href="cerita_vaksin.html">Cerita Vaksin</a>
+            <a href="cerita_kampus.html">Cerita Kampus</a>
+        </nav>
+    </header>
+    <main>
+        <section class="hero" id="welcome">
+            <div class="hero-copy">
+                <span class="eyebrow"><span class="eyebrow-dot"></span> Cerita dekat, rasa istimewa</span>
+                <h1>Sejenak berhenti.<br><span>Mulai membaca.</span></h1>
+                <p>Temukan cerita tentang hari-hari biasa yang selalu punya cara untuk menjadi luar biasa.</p>
+                <a class="button button-primary" href="#galeri" id="explore-link">Jelajahi cerita <span aria-hidden="true">↗</span></a>
+            </div>
+            <div class="hero-art" aria-hidden="true">
+                <div class="art-orbit"></div><div class="art-note note-one">cerita kecil,<br>amanat besar</div>
+                <div class="art-note note-two">EDISI PILIHAN <span>⭐</span></div>
+                <div class="art-book"><span>RUANG<br>KOMIK</span><i></i><b>01</b></div>
+                <span class="art-spark spark-one">💫</span><span class="art-spark spark-two">?</span>
+            </div>
+            <div class="hero-meta"><span>KOLEKSI CERITA PILIHAN</span><span>01 — 02</span></div>
+        </section>
+        <section class="gallery-section" id="galeri" aria-label="Daftar komik" hidden>
+            <div class="section-heading"><div><span class="eyebrow">Pilih cerita</span><h2>Temukan duniamu.</h2></div><p>Dua kisah, banyak momen untuk diingat.</p></div>
+            <div class="container">
+                <article class="card">
+                    <a class="card-image-link" href="cerita_vaksin.html" aria-label="Baca komik Cerita Vaksin"><img src="Cerita_Vaksin.jpeg" alt="Cuplikan komik tentang mengenali penipuan informasi vaksin" class="thumbnail vaccine-thumbnail"><span class="image-arrow" aria-hidden="true">↗</span></a>
+                    <div class="card-content"><span class="tag">Edukasi <span>·</span> Kesehatan</span><h3>Waspada Penipuan Vaksin</h3><p>Kisah tentang memeriksa kebenaran informasi vaksin sebelum menyebarkannya.</p><a href="cerita_vaksin.html" class="text-link">Baca cerita <span aria-hidden="true">→</span></a></div>
+                </article>
+                <article class="card">
+                    <a class="card-image-link" href="cerita_kampus.html" aria-label="Baca komik Cerita Kampus"><img src="thumbnail_kampus.png" alt="Cuplikan komik kehidupan kampus" class="thumbnail"><span class="image-arrow" aria-hidden="true">↗</span></a>
+                    <div class="card-content"><span class="tag">Kehidupan <span>·</span> Kampus</span><h3>Cerita Kampus</h3><p>Potongan kisah perkuliahan, pertemanan, dan dunia mahasiswa.</p><a href="cerita_kampus.html" class="text-link">Baca cerita <span aria-hidden="true">→</span></a></div>
+                </article>
+            </div>
+            <div class="screen-back"><button type="button" id="welcome-link"><span aria-hidden="true">←</span> Kembali ke beranda</button></div>
+        </section>
+    </main>
+    <footer><a class="footer-brand" href="komik.html">ruangkomik</a><span>© 2026 Ruang Komik</span><span>Cerita untuk dinikmati, kapan saja.</span></footer>
+    <script>
+        const exploreLink = document.getElementById('explore-link');
+        const gallery = document.getElementById('galeri');
+        const welcome = document.getElementById('welcome');
+        const backControl = document.querySelector('.screen-back');
+        function showGallery() {
+            document.body.classList.add('gallery-open');
+            welcome.hidden = true;
+            gallery.hidden = false;
+            backControl.hidden = false;
+        }
+        function showWelcome() {
+            document.body.classList.remove('gallery-open');
+            gallery.hidden = true;
+            backControl.hidden = true;
+            welcome.hidden = false;
+            history.replaceState(null, '', location.pathname);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        exploreLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            showGallery();
+            history.replaceState(null, '', '#galeri');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        document.getElementById('welcome-link').addEventListener('click', showWelcome);
+        if (window.location.hash === '#galeri') showGallery();
+    </script>
+</body>
+</html>
