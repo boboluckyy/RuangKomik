@@ -13,8 +13,7 @@
         <a class="brand" href="komik.html" aria-label="Ruang Komik, beranda"><span class="brand-mark" aria-hidden="true">R</span><span>ruang<span class="brand-light">komik</span></span></a>
         <nav aria-label="Navigasi utama">
             <a href="komik.html" aria-current="page">Beranda</a>
-            <a href="cerita_vaksin.html">Cerita Vaksin</a>
-            <a href="cerita_kampus.html">Cerita Kampus</a>
+            <a href="admin.html">Admin</a>
         </nav>
     </header>
     <main>
@@ -34,21 +33,15 @@
             <div class="hero-meta"><span>KOLEKSI CERITA PILIHAN</span><span>01 — 02</span></div>
         </section>
         <section class="gallery-section" id="galeri" aria-label="Daftar komik" hidden>
-            <div class="section-heading"><div><span class="eyebrow">Pilih cerita</span><h2>Temukan duniamu.</h2></div><p>Dua kisah, banyak momen untuk diingat.</p></div>
-            <div class="container">
-                <article class="card">
-                    <a class="card-image-link" href="cerita_vaksin.html" aria-label="Baca komik Cerita Vaksin"><img src="Cerita_Vaksin.jpeg" alt="Cuplikan komik tentang mengenali penipuan informasi vaksin" class="thumbnail vaccine-thumbnail"><span class="image-arrow" aria-hidden="true">↗</span></a>
-                    <div class="card-content"><span class="tag">Edukasi <span>·</span> Kesehatan</span><h3>Waspada Penipuan Vaksin</h3><p>Kisah tentang memeriksa kebenaran informasi vaksin sebelum menyebarkannya.</p><a href="cerita_vaksin.html" class="text-link">Baca cerita <span aria-hidden="true">→</span></a></div>
-                </article>
-                <article class="card">
-                    <a class="card-image-link" href="cerita_kampus.html" aria-label="Baca komik Cerita Kampus"><img src="thumbnail_kampus.png" alt="Cuplikan komik kehidupan kampus" class="thumbnail"><span class="image-arrow" aria-hidden="true">↗</span></a>
-                    <div class="card-content"><span class="tag">Kehidupan <span>·</span> Kampus</span><h3>Cerita Kampus</h3><p>Potongan kisah perkuliahan, pertemanan, dan dunia mahasiswa.</p><a href="cerita_kampus.html" class="text-link">Baca cerita <span aria-hidden="true">→</span></a></div>
-                </article>
-            </div>
+            <div class="section-heading"><div><span class="eyebrow">Pilih cerita</span><h2>Temukan duniamu.</h2></div><p>Jelajahi komik yang sedang diterbitkan.</p></div>
+            <div class="container" id="comic-list"><p id="gallery-status" role="status">Memuat komik…</p></div>
             <div class="screen-back"><button type="button" id="welcome-link"><span aria-hidden="true">←</span> Kembali ke beranda</button></div>
         </section>
     </main>
     <footer><a class="footer-brand" href="komik.html">ruangkomik</a><span>© 2026 Ruang Komik</span><span>Cerita untuk dinikmati, kapan saja.</span></footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-client.js"></script>
     <script>
         const exploreLink = document.getElementById('explore-link');
         const gallery = document.getElementById('galeri');
@@ -76,6 +69,31 @@
         });
         document.getElementById('welcome-link').addEventListener('click', showWelcome);
         if (window.location.hash === '#galeri') showGallery();
+        (async function loadPublishedComics() {
+            const comicList = document.getElementById('comic-list');
+            const galleryStatus = document.getElementById('gallery-status');
+            if (!window.ruangKomik.ready) {
+                galleryStatus.textContent = 'Supabase belum dikonfigurasi.';
+                return;
+            }
+            const { data, error } = await window.ruangKomik.client.from('comics')
+                .select('id,slug,title,description,category,cover_path')
+                .eq('is_published', true).order('created_at', { ascending: false });
+            if (error) {
+                galleryStatus.textContent = 'Komik gagal dimuat. Silakan coba lagi nanti.';
+                return;
+            }
+            if (!data || data.length === 0) {
+                galleryStatus.textContent = 'Belum ada komik terbit. Tambahkan komik baru melalui halaman Admin.';
+                return;
+            }
+            const { escape, imageUrl } = window.ruangKomik;
+            comicList.innerHTML = data.map(comic => {
+                const target = `story.html?slug=${encodeURIComponent(comic.slug)}`;
+                return `<article class="card"><a class="card-image-link" href="${target}" aria-label="Baca komik ${escape(comic.title)}"><img src="${escape(imageUrl(comic.cover_path))}" alt="Sampul komik ${escape(comic.title)}" class="thumbnail" loading="lazy"><span class="image-arrow" aria-hidden="true">↗</span></a><div class="card-content"><span class="tag">${escape(comic.category || 'Komik')}</span><h3>${escape(comic.title)}</h3><p>${escape(comic.description)}</p><a href="${target}" class="text-link">Baca cerita <span aria-hidden="true">→</span></a></div></article>`;
+            }).join('');
+            document.querySelector('.section-heading > p').textContent = 'Cerita pilihan dari Ruang Komik.';
+        }());
     </script>
 </body>
 </html>

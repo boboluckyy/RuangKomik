@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#f8f7f4"><title>Admin — Ruang Komik</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+    <header class="topbar"><a class="brand" href="komik.html"><span class="brand-mark">R</span><span>ruang<span class="brand-light">komik</span></span></a><nav aria-label="Navigasi utama"><a href="komik.html">Beranda</a><a href="admin.html" aria-current="page">Admin</a></nav></header>
+    <main class="story-main admin-main"><section class="story-intro"><span class="eyebrow"><span class="eyebrow-dot"></span> Pengelolaan konten</span><h1>Admin Ruang Komik</h1><p>Masuk menggunakan akun Admin Supabase untuk mengelola komik.</p></section>
+        <p id="admin-status" class="admin-status" role="status" aria-live="polite"></p>
+        <form id="login-form" class="admin-panel"><h2>Masuk</h2><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button button-primary" type="submit">Masuk sebagai Admin</button></form>
+        <section id="dashboard" hidden>
+            <div class="admin-toolbar"><h2>Daftar komik</h2><button id="sign-out" type="button" class="admin-secondary">Keluar</button></div>
+            <form id="comic-form" class="admin-panel"><h2>Tambah komik</h2><div class="admin-fields"><label>Judul<input name="title" maxlength="160" required></label><label>Slug URL<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required placeholder="cerita-baru"></label><label>Kategori<input name="category" maxlength="80"></label><label>Deskripsi<textarea name="description" rows="3" maxlength="1000"></textarea></label><label>Sampul (JPEG, PNG, WebP)<input name="cover" type="file" accept="image/jpeg,image/png,image/webp" required></label><label>Halaman komik (pilih berurutan)<input name="pages" type="file" accept="image/jpeg,image/png,image/webp" multiple required></label></div><label class="admin-check"><input name="published" type="checkbox"> Terbitkan setelah disimpan</label><button class="button button-primary" type="submit">Simpan komik</button></form>
+            <div id="comic-list" class="admin-list"></div>
+        </section>
+        <dialog id="comic-edit-dialog" class="admin-dialog">
+            <form id="comic-edit-form" class="admin-panel">
+                <h2>Edit komik</h2>
+                <input name="id" type="hidden">
+                <input name="oldCoverPath" type="hidden">
+                <div class="admin-fields">
+                    <label>Judul<input name="title" maxlength="160" required></label>
+                    <label>Slug URL<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required></label>
+                    <label>Kategori<input name="category" maxlength="80"></label>
+                    <label>Deskripsi<textarea name="description" rows="3" maxlength="1000"></textarea></label>
+                    <label>Sampul baru (opsional)<input name="cover" type="file" accept="image/jpeg,image/png,image/webp"></label>
+                </div>
+                <div class="admin-actions"><button class="admin-secondary" type="button" id="cancel-edit">Batal</button><button class="admin-secondary" type="submit">Simpan perubahan</button></div>
+            </form>
+        </dialog>
+    </main>
+    <footer><a class="footer-brand" href="komik.html">ruangkomik</a><span>© 2026 Ruang Komik</span><span>Cerita untuk dinikmati, kapan saja.</span></footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="supabase-client.js"></script><script src="admin.js"></script>
+</body>
+</html>
