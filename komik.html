@@ -9,6 +9,8 @@
     <script>try { document.documentElement.dataset.theme = localStorage.getItem('ruang-komik-theme') === 'dark' ? 'dark' : 'light'; } catch (_) { document.documentElement.dataset.theme = 'light'; }</script>
     <link rel="stylesheet" href="styles.css">
     <script src="theme.js" defer></script>
+    <script src="profile.js" defer></script>
+    <script src="nav-menu.js" defer></script>
 </head>
 <body>
     <header class="topbar">
@@ -27,9 +29,9 @@
     <main>
         <section class="hero" id="welcome" aria-label="Sambutan Ruang Komik">
             <div class="hero-copy">
-                <span class="eyebrow"><span class="eyebrow-dot"></span> Ruang untuk cerita</span>
-                <h1>Cerita dekat,<br><span>rasa istimewa.</span></h1>
-                <p>Temukan komik pilihan tentang kehidupan, pengetahuan, dan hal-hal kecil yang layak diceritakan.</p>
+                <span class="eyebrow"><span class="eyebrow-dot"></span> Ruang cerita</span>
+                <h1>Baca komik,<br><span>sambil belajar.</span></h1>
+                <p>Temukan komik tentang hidup, pengetahuan, dan momen kecil yang berharga.</p>
                 <a class="button button-primary" href="#galeri" id="explore-link">Jelajahi komik <span aria-hidden="true">↗</span></a>
             </div>
             <div class="hero-art" aria-hidden="true">
@@ -41,6 +43,7 @@
             <div class="hero-meta"><span>KOLEKSI CERITA PILIHAN</span><span>01 — 02</span></div>
         </section>
         <section class="gallery-section" id="galeri" aria-label="Daftar komik" hidden>
+            <div class="gallery-greeting" role="status"><span class="eyebrow-dot" aria-hidden="true"></span><p>Halo, selamat datang di Ruang Komik. Yuk, temukan cerita yang kamu suka!</p></div>
             <section class="gallery-banner" aria-label="Banner Ruang Komik"><img src="banner_KOMIK.jpeg" width="1920" height="1080" alt="Ruang Komik — Komik Edukasi"></section>
             <div class="gallery-controls" id="gallery-controls" hidden>
                 <label class="gallery-field" for="comic-sort">Urutkan
