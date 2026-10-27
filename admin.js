@@ -4,9 +4,21 @@
     const dashboard = document.getElementById('dashboard');
     const status = document.getElementById('admin-status');
     const list = document.getElementById('comic-list');
+    const statisticsStatus = document.getElementById('statistics-status');
+    const statistics = document.getElementById('admin-stats');
+    const recentStatus = document.getElementById('recent-comics-status');
+    const recentList = document.getElementById('recent-comics-list');
+    const reportsStatus = document.getElementById('reports-status');
+    const reportsList = document.getElementById('reports-list');
     const editDialog = document.getElementById('comic-edit-dialog');
     const editForm = document.getElementById('comic-edit-form');
     const say = (message, bad = false) => { status.textContent = message; status.dataset.error = bad ? 'true' : 'false'; };
+    const publicationStatusOf = comic => ['draft', 'published', 'archived'].includes(comic.publication_status)
+        ? comic.publication_status
+        : comic.is_published ? 'published' : 'draft';
+    const publicationLabel = value => ({ draft: 'Draf', published: 'Terbit', archived: 'Arsip' }[value] || 'Draf');
+    let publicationSchemaAvailable = true;
+    const missingFeatureColumns = error => error?.code === '42703' || /publication_status|is_featured/i.test(error?.message || '') && /column|schema cache|does not exist|could not find/i.test(error?.message || '');
     if (!api.ready) {
         loginForm.hidden = true;
         say('Supabase belum dikonfigurasi. Isi URL project dan publishable key di supabase-config.js.', true);
@@ -23,10 +35,94 @@
         if (loggedIn) await loadComics();
     }
     async function loadComics() {
+        statisticsStatus.textContent = 'Memuat statistik…';
+        statistics.hidden = true;
+        recentStatus.textContent = 'Memuat daftar komik terbaru…';
+        recentList.replaceChildren();
         list.innerHTML = '<p>Memuat komik…</p>';
-        const { data, error } = await db.from('comics').select('id,title,slug,description,category,cover_path,is_published,created_at').order('created_at', { ascending: false });
-        if (error) { say(error.message, true); return; }
-        list.innerHTML = data.length ? data.map(comic => `<article class="admin-item"><div class="admin-item-info"><img src="${api.escape(api.imageUrl(comic.cover_path))}" alt="Sampul ${api.escape(comic.title)}" loading="lazy"><div><h3>${api.escape(comic.title)}</h3><p>/${api.escape(comic.slug)} · ${comic.is_published ? 'Terbit' : 'Arsip'}</p></div></div><div class="admin-actions"><button type="button" data-action="edit" data-id="${comic.id}">Edit</button><button type="button" data-action="toggle" data-id="${comic.id}" data-published="${comic.is_published}">${comic.is_published ? 'Arsipkan' : 'Terbitkan'}</button><button type="button" data-action="delete" data-id="${comic.id}" data-title="${api.escape(comic.title)}" class="admin-danger">Hapus</button></div></article>`).join('') : '<p>Belum ada komik di database.</p>';
+        reportsStatus.textContent = 'Memuat laporan…';
+        try {
+            let [comicsResult, pagesResult] = await Promise.all([
+                db.from('comics').select('id,title,slug,description,category,cover_path,is_published,publication_status,is_featured,created_at').order('created_at', { ascending: false }),
+                db.from('comic_pages').select('id', { count: 'exact', head: true })
+            ]);
+            if (comicsResult.error && missingFeatureColumns(comicsResult.error)) {
+                publicationSchemaAvailable = false;
+                comicsResult = await db.from('comics').select('id,title,slug,description,category,cover_path,is_published,created_at').order('created_at', { ascending: false });
+            } else if (!comicsResult.error) {
+                publicationSchemaAvailable = true;
+            }
+            if (comicsResult.error) throw comicsResult.error;
+
+            const data = comicsResult.data || [];
+            const publishedCount = data.filter(comic => publicationStatusOf(comic) === 'published').length;
+            const draftCount = data.filter(comic => publicationStatusOf(comic) === 'draft').length;
+            const archivedCount = data.filter(comic => publicationStatusOf(comic) === 'archived').length;
+            document.getElementById('stat-total-comics').textContent = String(data.length);
+            document.getElementById('stat-published-comics').textContent = String(publishedCount);
+            document.getElementById('stat-draft-comics').textContent = String(draftCount);
+            document.getElementById('stat-archived-comics').textContent = String(archivedCount);
+            document.getElementById('stat-total-pages').textContent = pagesResult.error ? '—' : String(pagesResult.count ?? 0);
+            statistics.hidden = false;
+            const statisticsMessages = [];
+            if (!publicationSchemaAvailable) statisticsMessages.push('Migration status publikasi belum diterapkan; komik non-terbit sementara ditampilkan sebagai draf.');
+            if (pagesResult.error) statisticsMessages.push('Jumlah halaman gagal dimuat.');
+            if (data.length === 0) statisticsMessages.push('Tidak ada komik yang dapat dibaca sesi ini; statistik komik menampilkan nol.');
+            if (statisticsMessages.length === 0) statisticsMessages.push('Statistik dimuat dari data Supabase.');
+            statisticsStatus.textContent = statisticsMessages.join(' ');
+            if (pagesResult.error) say('Jumlah halaman komik gagal dimuat.', true);
+
+            if (data.length === 0) {
+                recentStatus.textContent = 'Tidak ada komik yang dapat dibaca sesi ini.';
+                list.innerHTML = '<p>Tidak ada komik yang dapat dibaca sesi ini.</p>';
+            } else {
+                const recentComics = data.slice(0, 5);
+                recentStatus.textContent = `Menampilkan ${recentComics.length} komik terbaru.`;
+                recentList.innerHTML = recentComics.map(comic => {
+                    const createdAt = new Date(comic.created_at);
+                    const dateLabel = Number.isNaN(createdAt.getTime())
+                        ? 'Tanggal tidak tersedia'
+                        : new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium' }).format(createdAt);
+                    const publicationStatus = publicationStatusOf(comic);
+                    return `<article class="admin-recent-item"><div><h3>${api.escape(comic.title)}</h3><p>${api.escape(comic.category || 'Tanpa kategori')} · ${api.escape(dateLabel)}</p><span>/${api.escape(comic.slug)}</span></div><span class="admin-recent-status" data-status="${publicationStatus}">${publicationLabel(publicationStatus)}</span></article>`;
+                }).join('');
+                list.innerHTML = data.map(comic => {
+                    const publicationStatus = publicationStatusOf(comic);
+                    return `<article class="admin-item"><div class="admin-item-info"><img src="${api.escape(api.imageUrl(comic.cover_path))}" alt="Sampul ${api.escape(comic.title)}" loading="lazy"><div><h3>${api.escape(comic.title)}</h3><p>/${api.escape(comic.slug)} · ${publicationLabel(publicationStatus)}${comic.is_featured ? ' · Unggulan' : ''}</p></div></div><div class="admin-actions"><button type="button" data-action="edit" data-id="${comic.id}">Edit</button><button type="button" data-action="feature" data-id="${comic.id}" data-featured="${comic.is_featured}" ${!publicationSchemaAvailable || publicationStatus !== 'published' ? 'disabled' : ''}>${comic.is_featured ? 'Hapus unggulan' : 'Jadikan unggulan'}</button><button type="button" data-action="toggle" data-id="${comic.id}" data-status="${publicationStatus}" data-published="${comic.is_published}">${comic.is_published ? 'Arsipkan' : 'Terbitkan'}</button><button type="button" data-action="delete" data-id="${comic.id}" data-title="${api.escape(comic.title)}" class="admin-danger">Hapus</button></div></article>`;
+                }).join('');
+            }
+            await loadReports();
+        } catch (error) {
+            statisticsStatus.textContent = 'Statistik gagal dimuat dari Supabase.';
+            recentStatus.textContent = 'Daftar komik terbaru gagal dimuat.';
+            list.innerHTML = '<p role="status">Daftar komik gagal dimuat. Periksa koneksi dan hak akses Admin.</p>';
+            reportsStatus.textContent = 'Laporan tidak dapat dimuat karena data Admin gagal dimuat.';
+            say(`Gagal memuat data Admin: ${error.message || 'terjadi kesalahan.'}`, true);
+        }
+    }
+
+    async function loadReports() {
+        reportsStatus.textContent = 'Memuat laporan…';
+        reportsList.replaceChildren();
+        try {
+            const { data, error } = await db.from('comic_reports')
+                .select('id,issue_type,message,status,created_at,comics(title,slug)')
+                .order('created_at', { ascending: false }).limit(50);
+            if (error) throw error;
+            if (!data || data.length === 0) {
+                reportsStatus.textContent = 'Belum ada laporan masalah komik.';
+                return;
+            }
+            const issueLabels = { image_broken: 'Gambar rusak', missing_page: 'Halaman hilang', page_order: 'Urutan halaman salah', other: 'Masalah lainnya' };
+            reportsStatus.textContent = `Menampilkan ${data.length} laporan terbaru.`;
+            reportsList.innerHTML = data.map(report => {
+                const date = new Date(report.created_at);
+                const dateLabel = Number.isNaN(date.getTime()) ? 'Tanggal tidak tersedia' : new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+                return `<article class="admin-report-item"><h3>${api.escape(report.comics?.title || 'Komik tidak tersedia')}</h3><span class="admin-report-meta">${api.escape(issueLabels[report.issue_type] || 'Masalah lainnya')} · ${api.escape(report.status)} · ${api.escape(dateLabel)} · /${api.escape(report.comics?.slug || '')}</span><p>${api.escape(report.message)}</p></article>`;
+            }).join('');
+        } catch (_) {
+            reportsStatus.textContent = 'Laporan gagal dimuat. Pastikan migration laporan sudah diterapkan.';
+        }
     }
     loginForm.addEventListener('submit', async event => {
         event.preventDefault(); say('Memeriksa akun…');
@@ -48,12 +144,28 @@
     });
     document.getElementById('sign-out').addEventListener('click', async () => { await db.auth.signOut(); say('Anda sudah keluar.'); await refreshSession(); });
     document.getElementById('cancel-edit').addEventListener('click', () => editDialog.close());
+    const editPublicationStatus = editForm.elements.publication_status;
+    const editFeatured = editForm.elements.is_featured;
+    function syncEditFeaturedControl() {
+        const canFeature = publicationSchemaAvailable && editPublicationStatus.value === 'published';
+        editFeatured.disabled = !canFeature;
+        editPublicationStatus.disabled = !publicationSchemaAvailable;
+        if (!canFeature) editFeatured.checked = false;
+    }
+    editPublicationStatus.addEventListener('change', syncEditFeaturedControl);
     list.addEventListener('click', async event => {
         const button = event.target.closest('button[data-action]');
         if (!button || button.dataset.action !== 'edit') return;
-        const { data: comic, error } = await db.from('comics').select('id,title,slug,description,category,cover_path').eq('id', button.dataset.id).single();
+        let { data: comic, error } = await db.from('comics').select('id,title,slug,description,category,cover_path,publication_status,is_featured').eq('id', button.dataset.id).single();
+        if (error && missingFeatureColumns(error)) {
+            publicationSchemaAvailable = false;
+            ({ data: comic, error } = await db.from('comics').select('id,title,slug,description,category,cover_path,is_published').eq('id', button.dataset.id).single());
+        }
         if (error) { say(error.message, true); return; }
         for (const field of ['id', 'title', 'slug', 'description', 'category']) editForm.elements[field].value = comic[field] || '';
+        editPublicationStatus.value = publicationStatusOf(comic);
+        editFeatured.checked = comic.is_featured === true;
+        syncEditFeaturedControl();
         editForm.elements.oldCoverPath.value = comic.cover_path;
         editForm.elements.cover.value = '';
         editDialog.showModal();
@@ -79,7 +191,11 @@
                 title: String(fields.get('title')).trim(),
                 slug: String(fields.get('slug')).trim(),
                 category: String(fields.get('category') || '').trim(),
-                description: String(fields.get('description') || '').trim()
+                description: String(fields.get('description') || '').trim(),
+                ...(publicationSchemaAvailable ? {
+                    publication_status: String(fields.get('publication_status')),
+                    is_featured: fields.get('publication_status') === 'published' && fields.get('is_featured') === 'on'
+                } : {})
             };
             if (newCoverPath) update.cover_path = newCoverPath;
             const { error } = await db.from('comics').update(update).eq('id', id).select('id').single();
@@ -105,6 +221,10 @@
         const fields = new FormData(form);
         const cover = fields.get('cover');
         const pages = fields.getAll('pages').filter(file => file.size > 0);
+        const publishOnSave = fields.get('published') === 'on';
+        const featureOnSave = fields.get('featured') === 'on';
+        if (featureOnSave && !publishOnSave) { say('Komik unggulan harus diterbitkan.', true); return; }
+        if (featureOnSave && !publicationSchemaAvailable) { say('Migration fitur komik unggulan belum diterapkan.', true); return; }
         if (!cover.size || pages.length === 0) { say('Pilih satu sampul dan minimal satu halaman komik.', true); return; }
         if ([cover, ...pages].some(file => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024)) {
             say('Setiap gambar harus JPEG, PNG, atau WebP dan maksimal 10 MB.', true); return;
@@ -122,15 +242,20 @@
         }
         try {
             const coverPath = await upload(cover, `cover.${cover.name.split('.').pop().toLowerCase()}`);
-            const { data: comic, error: insertError } = await db.from('comics').insert({ slug, title: String(fields.get('title')).trim(), description: String(fields.get('description') || '').trim(), category: String(fields.get('category') || '').trim(), cover_path: coverPath, is_published: false }).select('id').single();
+            const insertPayload = { slug, title: String(fields.get('title')).trim(), description: String(fields.get('description') || '').trim(), category: String(fields.get('category') || '').trim(), cover_path: coverPath, is_published: false };
+            if (publicationSchemaAvailable) Object.assign(insertPayload, { publication_status: 'draft', is_featured: false });
+            const { data: comic, error: insertError } = await db.from('comics').insert(insertPayload).select('id').single();
             if (insertError) throw insertError;
             createdComicId = comic.id;
             const records = [];
             for (let i = 0; i < pages.length; i++) records.push({ comic_id: comic.id, page_number: i + 1, image_path: await upload(pages[i], `page-${String(i + 1).padStart(3, '0')}.${pages[i].name.split('.').pop().toLowerCase()}`), alt_text: `${String(fields.get('title')).trim()}, halaman ${i + 1}` });
             const { error: pagesError } = await db.from('comic_pages').insert(records);
             if (pagesError) throw pagesError;
-            if (fields.get('published')) {
-                const { error } = await db.from('comics').update({ is_published: true }).eq('id', comic.id);
+            if (publishOnSave) {
+                const publishUpdate = publicationSchemaAvailable
+                    ? { publication_status: 'published', is_featured: featureOnSave }
+                    : { is_published: true };
+                const { error } = await db.from('comics').update(publishUpdate).eq('id', comic.id);
                 if (error) throw error;
             }
             form.reset(); say('Komik berhasil disimpan.'); await loadComics();
@@ -145,8 +270,16 @@
         if (!button || button.dataset.action === 'edit') return;
         const { action, id } = button.dataset;
         if (action === 'toggle') {
-            const { error } = await db.from('comics').update({ is_published: button.dataset.published !== 'true' }).eq('id', id).select('id').single();
+            const nextStatus = button.dataset.status === 'published' ? 'archived' : 'published';
+            const update = publicationSchemaAvailable
+                ? { publication_status: nextStatus, is_featured: false }
+                : { is_published: button.dataset.published !== 'true' };
+            const { error } = await db.from('comics').update(update).eq('id', id).select('id').single();
             if (error) say(error.message, true); else { say('Status komik diperbarui.'); await loadComics(); }
+        } else if (action === 'feature') {
+            if (!publicationSchemaAvailable) { say('Migration fitur komik unggulan belum diterapkan.', true); return; }
+            const { error } = await db.from('comics').update({ is_featured: button.dataset.featured !== 'true' }).eq('id', id).select('id').single();
+            if (error) say(error.message, true); else { say('Status unggulan komik diperbarui.'); await loadComics(); }
         } else if (action === 'delete') {
             if (!window.confirm(`Hapus permanen "${button.dataset.title}" beserta semua halaman dan file gambarnya? Tindakan ini tidak dapat dibatalkan.`)) return;
             const { data: comic, error: readError } = await db.from('comics').select('cover_path,comic_pages(image_path)').eq('id', id).single();

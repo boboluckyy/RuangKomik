@@ -1,15 +1,33 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#f8f7f4"><title>Admin — Ruang Komik</title><link rel="stylesheet" href="styles.css"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#f8f7f4"><title>Admin — Ruang Komik</title><script>try { document.documentElement.dataset.theme = localStorage.getItem('ruang-komik-theme') === 'dark' ? 'dark' : 'light'; } catch (_) { document.documentElement.dataset.theme = 'light'; }</script><link rel="stylesheet" href="styles.css"><script src="theme.js" defer></script></head>
 <body>
-    <header class="topbar"><a class="brand" href="komik.html"><span class="brand-mark">R</span><span>ruang<span class="brand-light">komik</span></span></a><nav aria-label="Navigasi utama"><a href="komik.html">Beranda</a><a href="admin.html" aria-current="page">Admin</a></nav></header>
+    <header class="topbar"><a class="brand" href="komik.html"><span class="brand-mark">R</span><span>ruang<span class="brand-light">komik</span></span></a><nav aria-label="Navigasi utama"><a href="komik.html">Beranda</a><a href="admin.html" aria-current="page">Admin</a><button class="theme-toggle" type="button" data-theme-toggle aria-label="Aktifkan mode gelap" aria-pressed="false">Mode gelap</button></nav></header>
     <main class="story-main admin-main"><section class="story-intro"><span class="eyebrow"><span class="eyebrow-dot"></span> Pengelolaan konten</span><h1>Admin Ruang Komik</h1><p>Masuk menggunakan akun Admin Supabase untuk mengelola komik.</p></section>
         <p id="admin-status" class="admin-status" role="status" aria-live="polite"></p>
         <form id="login-form" class="admin-panel"><h2>Masuk</h2><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button button-primary" type="submit">Masuk sebagai Admin</button></form>
         <section id="dashboard" hidden>
+            <section class="admin-overview" aria-labelledby="admin-overview-title">
+                <h2 id="admin-overview-title">Ringkasan koleksi</h2>
+                <p class="admin-overview-note">Statistik mengikuti data yang dapat dibaca sesi ini melalui RLS. Status draf, terbit, dan arsip mengikuti kolom publication_status.</p>
+                <p id="statistics-status" class="admin-data-status" role="status" aria-live="polite">Memuat statistik…</p>
+                <div class="admin-stats" id="admin-stats" hidden>
+                    <article class="admin-stat"><span>Seluruh komik</span><strong id="stat-total-comics">—</strong></article>
+                    <article class="admin-stat"><span>Komik terbit</span><strong id="stat-published-comics">—</strong></article>
+                    <article class="admin-stat"><span>Draf</span><strong id="stat-draft-comics">—</strong></article>
+                    <article class="admin-stat"><span>Arsip</span><strong id="stat-archived-comics">—</strong></article>
+                    <article class="admin-stat"><span>Total halaman</span><strong id="stat-total-pages">—</strong></article>
+                </div>
+            </section>
+            <section class="admin-recent" aria-labelledby="recent-comics-title">
+                <h2 id="recent-comics-title">Komik terbaru</h2>
+                <p id="recent-comics-status" class="admin-data-status" role="status" aria-live="polite">Memuat daftar komik terbaru…</p>
+                <div id="recent-comics-list" class="admin-recent-list"></div>
+            </section>
             <div class="admin-toolbar"><h2>Daftar komik</h2><button id="sign-out" type="button" class="admin-secondary">Keluar</button></div>
-            <form id="comic-form" class="admin-panel"><h2>Tambah komik</h2><div class="admin-fields"><label>Judul<input name="title" maxlength="160" required></label><label>Slug URL<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required placeholder="cerita-baru"></label><label>Kategori<input name="category" maxlength="80"></label><label>Deskripsi<textarea name="description" rows="3" maxlength="1000"></textarea></label><label>Sampul (JPEG, PNG, WebP)<input name="cover" type="file" accept="image/jpeg,image/png,image/webp" required></label><label>Halaman komik (pilih berurutan)<input name="pages" type="file" accept="image/jpeg,image/png,image/webp" multiple required></label></div><label class="admin-check"><input name="published" type="checkbox"> Terbitkan setelah disimpan</label><button class="button button-primary" type="submit">Simpan komik</button></form>
+            <form id="comic-form" class="admin-panel"><h2>Tambah komik</h2><div class="admin-fields"><label>Judul<input name="title" maxlength="160" required></label><label>Slug URL<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required placeholder="cerita-baru"></label><label>Kategori<input name="category" maxlength="80"></label><label>Deskripsi<textarea name="description" rows="3" maxlength="1000"></textarea></label><label>Sampul (JPEG, PNG, WebP)<input name="cover" type="file" accept="image/jpeg,image/png,image/webp" required></label><label>Halaman komik (pilih berurutan)<input name="pages" type="file" accept="image/jpeg,image/png,image/webp" multiple required></label></div><label class="admin-check"><input name="published" type="checkbox"> Terbitkan setelah disimpan</label><label class="admin-check"><input name="featured" type="checkbox"> Jadikan unggulan (harus diterbitkan)</label><button class="button button-primary" type="submit">Simpan komik</button></form>
             <div id="comic-list" class="admin-list"></div>
+            <section class="admin-reports" aria-labelledby="admin-reports-title"><h2 id="admin-reports-title">Laporan masalah komik</h2><p id="reports-status" class="admin-data-status" role="status" aria-live="polite">Memuat laporan…</p><div id="reports-list" class="admin-report-list"></div></section>
         </section>
         <dialog id="comic-edit-dialog" class="admin-dialog">
             <form id="comic-edit-form" class="admin-panel">
@@ -19,10 +37,12 @@
                 <div class="admin-fields">
                     <label>Judul<input name="title" maxlength="160" required></label>
                     <label>Slug URL<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required></label>
+                    <label>Status publikasi<select name="publication_status" required><option value="draft">Draf</option><option value="published">Terbit</option><option value="archived">Arsip</option></select></label>
                     <label>Kategori<input name="category" maxlength="80"></label>
                     <label>Deskripsi<textarea name="description" rows="3" maxlength="1000"></textarea></label>
                     <label>Sampul baru (opsional)<input name="cover" type="file" accept="image/jpeg,image/png,image/webp"></label>
                 </div>
+                <label class="admin-check"><input name="is_featured" type="checkbox"> Tampilkan sebagai komik unggulan</label>
                 <div class="admin-actions"><button class="admin-secondary" type="button" id="cancel-edit">Batal</button><button class="admin-secondary" type="submit">Simpan perubahan</button></div>
             </form>
         </dialog>

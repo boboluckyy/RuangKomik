@@ -2,13 +2,16 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f8f7f4"><title>Baca Komik — Ruang Komik</title>
+    <meta name="theme-color" content="#f8f7f4"><meta name="description" content="Baca komik dan cerita pilihan di Ruang Komik."><meta property="og:type" content="article"><meta property="og:title" content="Ruang Komik"><meta property="og:description" content="Baca komik dan cerita pilihan di Ruang Komik."><title>Baca Komik — Ruang Komik</title>
+    <script>try { document.documentElement.dataset.theme = localStorage.getItem('ruang-komik-theme') === 'dark' ? 'dark' : 'light'; } catch (_) { document.documentElement.dataset.theme = 'light'; }</script>
     <link rel="stylesheet" href="styles.css">
+    <script src="theme.js" defer></script>
 </head>
 <body>
-    <header class="topbar"><a class="brand" href="komik.html"><span class="brand-mark">R</span><span>ruang<span class="brand-light">komik</span></span></a><nav aria-label="Navigasi utama"><a href="komik.html">Beranda</a><a href="admin.html">Admin</a></nav></header>
+    <header class="topbar"><a class="brand" href="komik.html"><span class="brand-mark">R</span><span>ruang<span class="brand-light">komik</span></span></a><nav aria-label="Navigasi utama"><a href="komik.html">Beranda</a><a href="admin.html">Admin</a><button class="theme-toggle" type="button" data-theme-toggle aria-label="Aktifkan mode gelap" aria-pressed="false">Mode gelap</button></nav></header>
     <main class="story-main" id="story-content"><p role="status">Memuat komik…</p></main>
+    <button class="story-back-to-top" id="back-to-top" type="button" aria-label="Kembali ke atas" hidden>↑</button>
     <footer><a class="footer-brand" href="komik.html">ruangkomik</a><span>© 2026 Ruang Komik</span><span>Cerita untuk dinikmati, kapan saja.</span></footer>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="supabase-client.js"></script><script src="story.js"></script>
+    <script src="reading-history.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="supabase-client.js"></script><script src="story.js"></script>
 </body>
 </html>

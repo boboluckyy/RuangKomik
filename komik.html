@@ -6,7 +6,9 @@
     <meta name="theme-color" content="#f8f7f4">
     <meta name="description" content="Temukan cerita sehari-hari dalam komik pilihan Ruang Komik.">
     <title>Ruang Komik — Cerita untuk dinikmati</title>
+    <script>try { document.documentElement.dataset.theme = localStorage.getItem('ruang-komik-theme') === 'dark' ? 'dark' : 'light'; } catch (_) { document.documentElement.dataset.theme = 'light'; }</script>
     <link rel="stylesheet" href="styles.css">
+    <script src="theme.js" defer></script>
 </head>
 <body>
     <header class="topbar">
@@ -14,15 +16,21 @@
         <nav aria-label="Navigasi utama">
             <a href="komik.html" aria-current="page">Beranda</a>
             <a href="admin.html">Admin</a>
+            <button class="nav-history" id="show-reading-history" type="button" aria-haspopup="dialog" aria-controls="reading-history-dialog">Riwayat</button>
+            <button class="theme-toggle" type="button" data-theme-toggle aria-label="Aktifkan mode gelap" aria-pressed="false">Mode gelap</button>
+            <div class="nav-search-wrap">
+                <label class="nav-search"><span class="visually-hidden">Cari judul atau kategori komik</span><input id="comic-search" type="search" placeholder="Cari judul atau kategori" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="comic-search-results" aria-expanded="false"></label>
+                <div class="search-suggestions" id="comic-search-results" role="listbox" aria-label="Hasil pencarian" hidden></div>
+            </div>
         </nav>
     </header>
     <main>
-        <section class="hero" id="welcome">
+        <section class="hero" id="welcome" aria-label="Sambutan Ruang Komik">
             <div class="hero-copy">
-                <span class="eyebrow"><span class="eyebrow-dot"></span> Cerita dekat, rasa istimewa</span>
-                <h1>Sejenak berhenti.<br><span>Mulai membaca.</span></h1>
-                <p>Temukan cerita tentang hari-hari biasa yang selalu punya cara untuk menjadi luar biasa.</p>
-                <a class="button button-primary" href="#galeri" id="explore-link">Jelajahi cerita <span aria-hidden="true">↗</span></a>
+                <span class="eyebrow"><span class="eyebrow-dot"></span> Ruang untuk cerita</span>
+                <h1>Cerita dekat,<br><span>rasa istimewa.</span></h1>
+                <p>Temukan komik pilihan tentang kehidupan, pengetahuan, dan hal-hal kecil yang layak diceritakan.</p>
+                <a class="button button-primary" href="#galeri" id="explore-link">Jelajahi komik <span aria-hidden="true">↗</span></a>
             </div>
             <div class="hero-art" aria-hidden="true">
                 <div class="art-orbit"></div><div class="art-note note-one">cerita kecil,<br>amanat besar</div>
@@ -33,25 +41,88 @@
             <div class="hero-meta"><span>KOLEKSI CERITA PILIHAN</span><span>01 — 02</span></div>
         </section>
         <section class="gallery-section" id="galeri" aria-label="Daftar komik" hidden>
-            <div class="section-heading"><div><span class="eyebrow">Pilih cerita</span><h2>Temukan duniamu.</h2></div><p>Jelajahi komik yang sedang diterbitkan.</p></div>
+            <section class="gallery-banner" aria-label="Banner Ruang Komik"><img src="banner_KOMIK.jpeg" width="1920" height="1080" alt="Ruang Komik — Komik Edukasi"></section>
+            <div class="gallery-controls" id="gallery-controls" hidden>
+                <label class="gallery-field" for="comic-sort">Urutkan
+                    <select id="comic-sort"><option value="newest">Terbaru</option><option value="alphabetical">Alfabetis</option></select>
+                </label>
+                <p class="gallery-result-count" id="gallery-result-count" role="status" aria-live="polite"></p>
+            </div>
             <div class="container" id="comic-list"><p id="gallery-status" role="status">Memuat komik…</p></div>
+            <section class="featured-section" id="featured-section" aria-labelledby="featured-title" hidden><div class="subsection-heading"><h3 id="featured-title">Komik Unggulan</h3><p>Dipilih oleh Admin Ruang Komik.</p></div><div class="container featured-list" id="featured-comics"></div></section>
+            <section class="popular-section" id="popular-section" aria-labelledby="popular-title" hidden><div class="subsection-heading"><h3 id="popular-title">Komik Populer</h3><p id="popular-status" role="status" aria-live="polite"></p></div><div class="container" id="popular-comics"></div></section>
             <div class="screen-back"><button type="button" id="welcome-link"><span aria-hidden="true">←</span> Kembali ke beranda</button></div>
         </section>
     </main>
+    <dialog class="reading-history-dialog" id="reading-history-dialog" aria-labelledby="reading-history-title">
+        <section class="reading-history" id="reading-history">
+            <div class="reading-history-heading"><div><h2 id="reading-history-title">Riwayat Membaca</h2><p id="reading-history-status" role="status" aria-live="polite"></p></div><div class="reading-history-actions"><button class="reading-history-clear" id="clear-reading-history" type="button">Hapus seluruh riwayat</button><button class="reading-history-close" id="close-reading-history" type="button" aria-label="Tutup riwayat">Tutup</button></div></div>
+            <div class="reading-history-list" id="reading-history-list"></div>
+        </section>
+    </dialog>
     <footer><a class="footer-brand" href="komik.html">ruangkomik</a><span>© 2026 Ruang Komik</span><span>Cerita untuk dinikmati, kapan saja.</span></footer>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="supabase-client.js"></script>
+    <script src="reading-history.js"></script>
     <script>
         const exploreLink = document.getElementById('explore-link');
         const gallery = document.getElementById('galeri');
         const welcome = document.getElementById('welcome');
         const backControl = document.querySelector('.screen-back');
+        const historyApi = window.ruangKomikReadingHistory;
+        const historyDialog = document.getElementById('reading-history-dialog');
+        const historyList = document.getElementById('reading-history-list');
+        const historyStatus = document.getElementById('reading-history-status');
+        const clearHistoryButton = document.getElementById('clear-reading-history');
+        const showHistoryButton = document.getElementById('show-reading-history');
+        let availableSlugs = null;
+        let hasActiveFilter = false;
+        function renderReadingHistory() {
+            if (!historyApi) return;
+            const entries = historyApi.read();
+            historyStatus.textContent = entries.length ? `${entries.length} komik dalam riwayat.` : 'Belum ada komik yang dibaca.';
+            clearHistoryButton.disabled = entries.length === 0;
+            if (entries.length === 0) {
+                historyList.innerHTML = '<p class="reading-history-empty">Riwayat membaca akan muncul di sini setelah kamu membaca komik.</p>';
+                return;
+            }
+            historyList.innerHTML = entries.map(entry => {
+                const dateLabel = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(entry.lastReadAt));
+                const progress = entry.lastPage ? `Halaman ${entry.lastPage}` : 'Progres halaman belum tersedia';
+                const isAvailable = availableSlugs === null || availableSlugs.has(entry.slug);
+                const target = `story.html?slug=${encodeURIComponent(entry.slug)}${entry.lastPage ? `&page=${entry.lastPage}` : ''}`;
+                const cover = entry.coverUrl ? `<img src="${window.ruangKomik.escape(entry.coverUrl)}" alt="Sampul ${window.ruangKomik.escape(entry.title)}" loading="lazy">` : '';
+                const resume = isAvailable
+                    ? `<a class="reading-history-resume" href="${target}">${entry.lastPage ? `Lanjutkan Membaca · ${progress}` : 'Mulai Membaca'}</a>`
+                    : '<span class="reading-history-unavailable">Komik tidak tersedia atau tidak sedang terbit.</span>';
+                return `<article class="reading-history-item">${cover}<div class="reading-history-info"><h4>${window.ruangKomik.escape(entry.title)}</h4><p>${progress} · Terakhir dibaca ${window.ruangKomik.escape(dateLabel)}</p>${resume}</div><button class="reading-history-remove" type="button" data-history-remove="${window.ruangKomik.escape(entry.slug)}" aria-label="Hapus riwayat ${window.ruangKomik.escape(entry.title)}">Hapus</button></article>`;
+            }).join('');
+        }
+        renderReadingHistory();
+        historyList.addEventListener('click', event => {
+            const button = event.target.closest('[data-history-remove]');
+            if (!button || !historyApi) return;
+            historyApi.remove(button.dataset.historyRemove);
+            renderReadingHistory();
+        });
+        clearHistoryButton.addEventListener('click', () => {
+            if (!historyApi) return;
+            historyApi.clear();
+            renderReadingHistory();
+        });
+        showHistoryButton.addEventListener('click', () => {
+            renderReadingHistory();
+            historyDialog.showModal();
+        });
+        document.getElementById('close-reading-history').addEventListener('click', () => historyDialog.close());
         function showGallery() {
             document.body.classList.add('gallery-open');
             welcome.hidden = true;
             gallery.hidden = false;
             backControl.hidden = false;
+            history.replaceState(null, '', '#galeri');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function showWelcome() {
             document.body.classList.remove('gallery-open');
@@ -64,36 +135,188 @@
         exploreLink.addEventListener('click', (event) => {
             event.preventDefault();
             showGallery();
-            history.replaceState(null, '', '#galeri');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
         document.getElementById('welcome-link').addEventListener('click', showWelcome);
         if (window.location.hash === '#galeri') showGallery();
         (async function loadPublishedComics() {
             const comicList = document.getElementById('comic-list');
             const galleryStatus = document.getElementById('gallery-status');
+            const controls = document.getElementById('gallery-controls');
             if (!window.ruangKomik.ready) {
                 galleryStatus.textContent = 'Supabase belum dikonfigurasi.';
                 return;
             }
-            const { data, error } = await window.ruangKomik.client.from('comics')
-                .select('id,slug,title,description,category,cover_path')
+            const client = window.ruangKomik.client;
+            let result = await client.from('comics')
+                .select('id,slug,title,description,category,cover_path,created_at,is_featured')
                 .eq('is_published', true).order('created_at', { ascending: false });
+            if (result.error && (result.error.code === '42703' || /is_featured/i.test(result.error.message || ''))) {
+                result = await client.from('comics')
+                    .select('id,slug,title,description,category,cover_path,created_at')
+                    .eq('is_published', true).order('created_at', { ascending: false });
+                if (!result.error && result.data) result.data = result.data.map(comic => ({ ...comic, is_featured: false }));
+            }
+            const { data, error } = result;
             if (error) {
                 galleryStatus.textContent = 'Komik gagal dimuat. Silakan coba lagi nanti.';
                 return;
             }
+            availableSlugs = new Set((data || []).map(comic => comic.slug));
+            renderReadingHistory();
             if (!data || data.length === 0) {
                 galleryStatus.textContent = 'Belum ada komik terbit. Tambahkan komik baru melalui halaman Admin.';
                 return;
             }
             const { escape, imageUrl } = window.ruangKomik;
-            comicList.innerHTML = data.map(comic => {
+            const searchInput = document.getElementById('comic-search');
+            const sortSelect = document.getElementById('comic-sort');
+            const resultCount = document.getElementById('gallery-result-count');
+            const categoryOf = comic => comic.category?.trim() || 'Komik';
+            const normalizeSearch = value => String(value ?? '').toLocaleLowerCase('id-ID').trim().replace(/\s+/g, ' ');
+            const searchableText = comic => normalizeSearch([comic.title, comic.category, comic.description].filter(Boolean).join(' '));
+            const matchesComic = (comic, queryValue = searchInput.value) => {
+                const text = searchableText(comic);
+                const query = normalizeSearch(queryValue);
+                return !query || text.includes(query);
+            };
+            const publishedDateOf = comic => {
+                const timestamp = Date.parse(comic.created_at);
+                return Number.isFinite(timestamp) ? timestamp : null;
+            };
+            const isNewComic = comic => {
+                const timestamp = publishedDateOf(comic);
+                const age = Date.now() - timestamp;
+                return timestamp !== null && age >= 0 && age <= 30 * 24 * 60 * 60 * 1000;
+            };
+            const comicCard = (comic, extra = '') => {
                 const target = `story.html?slug=${encodeURIComponent(comic.slug)}`;
-                return `<article class="card"><a class="card-image-link" href="${target}" aria-label="Baca komik ${escape(comic.title)}"><img src="${escape(imageUrl(comic.cover_path))}" alt="Sampul komik ${escape(comic.title)}" class="thumbnail" loading="lazy"><span class="image-arrow" aria-hidden="true">↗</span></a><div class="card-content"><span class="tag">${escape(comic.category || 'Komik')}</span><h3>${escape(comic.title)}</h3><p>${escape(comic.description)}</p><a href="${target}" class="text-link">Baca cerita <span aria-hidden="true">→</span></a></div></article>`;
-            }).join('');
-            document.querySelector('.section-heading > p').textContent = 'Cerita pilihan dari Ruang Komik.';
+                const coverUrl = imageUrl(comic.cover_path);
+                const cover = coverUrl
+                    ? `<img src="${escape(coverUrl)}" alt="Sampul komik ${escape(comic.title)}" class="thumbnail" loading="lazy"><span class="cover-fallback" hidden aria-hidden="true">Sampul belum tersedia</span>`
+                    : '<span class="cover-fallback" aria-hidden="true">Sampul belum tersedia</span>';
+                const badges = `<div class="card-badges"><span class="tag">${escape(categoryOf(comic))}</span><span class="comic-status">Terbit</span>${isNewComic(comic) ? '<span class="comic-new">Baru</span>' : ''}</div>`;
+                return `<article class="card"><a class="card-image-link" href="${target}" aria-label="Baca komik ${escape(comic.title)}">${cover}<span class="image-arrow" aria-hidden="true">↗</span></a><div class="card-content">${badges}<h3>${escape(comic.title)}</h3><p>${escape(comic.description || 'Buka komik ini untuk menikmati ceritanya.')}</p>${extra}<a href="${target}" class="text-link">Baca Komik <span aria-hidden="true">→</span></a></div></article>`;
+            };
+            const searchSuggestions = document.getElementById('comic-search-results');
+            function renderSearchSuggestions() {
+                const query = normalizeSearch(searchInput.value);
+                if (!query) {
+                    searchSuggestions.hidden = true;
+                    searchInput.setAttribute('aria-expanded', 'false');
+                    return;
+                }
+                const matches = data.filter(comic => matchesComic(comic)).slice(0, 6);
+                if (matches.length === 0) {
+                    searchSuggestions.innerHTML = '<p class="search-suggestions-empty">Komik tidak ditemukan.</p>';
+                } else {
+                    searchSuggestions.innerHTML = matches.map(comic => {
+                        const coverUrl = imageUrl(comic.cover_path);
+                        const cover = coverUrl
+                            ? `<img class="search-suggestion-image" src="${escape(coverUrl)}" alt=""><span class="search-suggestion-image-fallback" hidden aria-hidden="true"></span>`
+                            : '<span class="search-suggestion-image-fallback" aria-hidden="true"></span>';
+                        return `<a class="search-suggestion-item" role="option" href="story.html?slug=${encodeURIComponent(comic.slug)}">${cover}<span class="search-suggestion-copy"><strong>${escape(comic.title)}</strong><small>${escape(categoryOf(comic))}</small></span></a>`;
+                    }).join('');
+                }
+                searchSuggestions.hidden = false;
+                searchInput.setAttribute('aria-expanded', 'true');
+            }
+            document.addEventListener('error', event => {
+                if (event.target.matches('.search-suggestion-image')) {
+                    event.target.hidden = true;
+                    const fallback = event.target.nextElementSibling;
+                    if (fallback?.classList.contains('search-suggestion-image-fallback')) fallback.hidden = false;
+                    return;
+                }
+                if (!event.target.matches('.thumbnail')) return;
+                event.target.hidden = true;
+                const fallback = event.target.nextElementSibling;
+                if (fallback?.classList.contains('cover-fallback')) fallback.hidden = false;
+            }, true);
+            comicList.replaceChildren();
+            controls.hidden = false;
+
+            const featured = data.filter(comic => comic.is_featured === true);
+            const featuredSection = document.getElementById('featured-section');
+            document.getElementById('featured-comics').innerHTML = featured.map(comic => comicCard(comic)).join('');
+            const popularSection = document.getElementById('popular-section');
+
+            function renderFilteredComics() {
+                hasActiveFilter = Boolean(normalizeSearch(searchInput.value));
+                featuredSection.hidden = hasActiveFilter || featured.length === 0;
+                popularSection.hidden = hasActiveFilter || popularSection.dataset.available !== 'true';
+                const visibleComics = data.filter(comic => matchesComic(comic));
+                if (sortSelect.value === 'alphabetical') {
+                    visibleComics.sort((a, b) => a.title.localeCompare(b.title, 'id', { sensitivity: 'base' }));
+                } else {
+                    visibleComics.sort((a, b) => (publishedDateOf(b) ?? -Infinity) - (publishedDateOf(a) ?? -Infinity));
+                }
+
+                const total = visibleComics.length;
+                resultCount.textContent = `${total} komik ditemukan`;
+                if (total === 0) {
+                    comicList.innerHTML = '<div class="gallery-empty-state" role="status"><p>Tidak ada komik yang cocok dengan kata kunci ini.</p><button class="search-reset-button" type="button" data-reset-search>Hapus pencarian</button></div>';
+                    return;
+                }
+                comicList.innerHTML = visibleComics.map(comic => comicCard(comic)).join('');
+            }
+
+            function resetSearch() {
+                searchInput.value = '';
+                renderFilteredComics();
+                renderSearchSuggestions();
+            }
+
+            searchInput.addEventListener('input', () => {
+                renderFilteredComics();
+                renderSearchSuggestions();
+            });
+            searchInput.addEventListener('focus', renderSearchSuggestions);
+            searchInput.addEventListener('keydown', event => {
+                if (event.key === 'Escape') {
+                    searchSuggestions.hidden = true;
+                    searchInput.setAttribute('aria-expanded', 'false');
+                }
+            });
+            document.addEventListener('click', event => {
+                if (event.target.closest('.nav-search-wrap')) return;
+                searchSuggestions.hidden = true;
+                searchInput.setAttribute('aria-expanded', 'false');
+            });
+            comicList.addEventListener('click', event => {
+                if (!event.target.closest('[data-reset-search]')) return;
+                resetSearch();
+            });
+            sortSelect.addEventListener('change', renderFilteredComics);
+            renderFilteredComics();
+            renderSearchSuggestions();
+            void loadPopularComics(data, client, comicCard);
         }());
+
+        async function loadPopularComics(publishedComics, client, comicCard) {
+            const section = document.getElementById('popular-section');
+            const status = document.getElementById('popular-status');
+            const list = document.getElementById('popular-comics');
+            try {
+                const { data, error } = await client.from('comic_read_counts')
+                    .select('comic_id,read_count').order('read_count', { ascending: false }).limit(3);
+                if (error) { section.hidden = true; section.dataset.available = 'false'; return; }
+                const comicsById = new Map(publishedComics.map(comic => [comic.id, comic]));
+                const ranked = (data || []).map(item => ({ comic: comicsById.get(item.comic_id), count: item.read_count }))
+                    .filter(item => item.comic && Number.isSafeInteger(Number(item.count)) && Number(item.count) > 0);
+                section.dataset.available = 'true';
+                section.hidden = hasActiveFilter;
+                if (ranked.length === 0) {
+                    status.textContent = 'Belum ada pembacaan komik yang tercatat.';
+                    list.replaceChildren();
+                    return;
+                }
+                status.textContent = `Menampilkan ${ranked.length} komik dengan pembacaan terbanyak.`;
+                list.innerHTML = ranked.map(item => comicCard(item.comic, `<p class="comic-read-count">${Number(item.count).toLocaleString('id-ID')} kali dibaca</p>`)).join('');
+            } catch (_) {
+                section.hidden = true;
+                section.dataset.available = 'false';
+            }
+        }
     </script>
 </body>
 </html>
