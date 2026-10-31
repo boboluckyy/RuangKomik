@@ -27,6 +27,23 @@
             <div class="admin-toolbar"><h2>Daftar komik</h2><button id="sign-out" type="button" class="admin-secondary">Keluar</button></div>
             <form id="comic-form" class="admin-panel"><h2>Tambah komik</h2><div class="admin-fields"><label>Judul<input name="title" maxlength="160" required></label><label>Slug URL<input name="slug" pattern="[a-z0-9]+(-[a-z0-9]+)*" required placeholder="cerita-baru"></label><label>Kategori<input name="category" maxlength="80"></label><label>Deskripsi<textarea name="description" rows="3" maxlength="1000"></textarea></label><label>Sampul (JPEG, PNG, WebP)<input name="cover" type="file" accept="image/jpeg,image/png,image/webp" required></label><label>Halaman komik (pilih berurutan)<input name="pages" type="file" accept="image/jpeg,image/png,image/webp" multiple required></label></div><label class="admin-check"><input name="published" type="checkbox"> Terbitkan setelah disimpan</label><label class="admin-check"><input name="featured" type="checkbox"> Jadikan unggulan (harus diterbitkan)</label><button class="button button-primary" type="submit">Simpan komik</button></form>
             <div id="comic-list" class="admin-list"></div>
+            <section class="music-admin-section" aria-labelledby="music-admin-title">
+                <div class="admin-toolbar"><h2 id="music-admin-title">Musik &amp; playlist</h2></div>
+                <p id="music-admin-status" class="admin-data-status" role="status" aria-live="polite">Memuat daftar lagu…</p>
+                <form id="music-form" class="admin-panel">
+                    <h3>Tambah lagu</h3>
+                    <div class="admin-fields music-fields">
+                        <label>Judul lagu<input name="title" maxlength="160" required></label>
+                        <label>Nama artis<input name="artist" maxlength="120" placeholder="Opsional"></label>
+                        <label>Playlist<select name="playlist_key" required><option value="lofi-reading">Lo-fi Reading</option><option value="piano-relax">Piano &amp; Relax</option><option value="chill-vibes">Chill Vibes</option></select></label>
+                        <label>File lagu (MP3, maks. 50 MB)<input name="audio" type="file" accept="audio/mpeg,.mp3" required></label>
+                        <label>Album cover (opsional)<input name="cover" type="file" accept="image/jpeg,image/png,image/webp"></label>
+                    </div>
+                    <p class="music-admin-note">Unggah hanya audio dan cover yang Anda miliki atau berhak gunakan.</p>
+                    <button class="button button-primary" type="submit">Tambah lagu</button>
+                </form>
+                <div id="music-track-list" class="admin-list music-admin-list"></div>
+            </section>
             <section class="admin-reports" aria-labelledby="admin-reports-title"><h2 id="admin-reports-title">Laporan masalah komik</h2><p id="reports-status" class="admin-data-status" role="status" aria-live="polite">Memuat laporan…</p><div id="reports-list" class="admin-report-list"></div></section>
         </section>
         <dialog id="comic-edit-dialog" class="admin-dialog">

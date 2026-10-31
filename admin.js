@@ -10,6 +10,8 @@
     const recentList = document.getElementById('recent-comics-list');
     const reportsStatus = document.getElementById('reports-status');
     const reportsList = document.getElementById('reports-list');
+    const musicStatus = document.getElementById('music-admin-status');
+    const musicList = document.getElementById('music-track-list');
     const editDialog = document.getElementById('comic-edit-dialog');
     const editForm = document.getElementById('comic-edit-form');
     const say = (message, bad = false) => { status.textContent = message; status.dataset.error = bad ? 'true' : 'false'; };
@@ -37,7 +39,23 @@
         const loggedIn = Boolean(data.session);
         loginForm.hidden = loggedIn;
         dashboard.hidden = !loggedIn;
-        if (loggedIn) await loadComics();
+        if (loggedIn) { await loadComics(); await loadMusicTracks(); }
+    }
+    const musicBucket = db.storage.from('music-files');
+    const musicPlaylistNames = { 'lofi-reading': 'Lo-fi Reading', 'piano-relax': 'Piano & Relax', 'chill-vibes': 'Chill Vibes' };
+    async function loadMusicTracks() {
+        musicStatus.textContent = 'Memuat daftar lagu…';
+        try {
+            const { data, error } = await db.from('music_tracks').select('id,title,artist,playlist_key,audio_path,cover_path').order('playlist_key').order('created_at');
+            if (error) throw error;
+            if (!data?.length) { musicStatus.textContent = 'Belum ada lagu. Tambahkan lagu melalui formulir ini.'; musicList.replaceChildren(); return; }
+            musicStatus.textContent = `${data.length} lagu tersedia untuk pengunjung.`;
+            musicList.innerHTML = data.map(track => `<article class="admin-item music-admin-item"><div class="admin-item-info"><img src="${track.cover_path ? api.escape(db.storage.from('music-files').getPublicUrl(track.cover_path).data.publicUrl) : ''}" alt="Cover ${api.escape(track.title)}" ${track.cover_path ? '' : 'hidden'}><div><h3>${api.escape(track.title)}</h3><p>${api.escape(track.artist || 'Ruang Komik')} · ${api.escape(musicPlaylistNames[track.playlist_key] || track.playlist_key)}</p></div></div><div class="admin-actions"><button type="button" class="admin-danger" data-music-delete="${api.escape(track.id)}" data-title="${api.escape(track.title)}">Hapus</button></div></article>`).join('');
+        } catch (error) {
+            musicStatus.textContent = /music_tracks|schema cache|does not exist/i.test(error.message || '')
+                ? 'Terapkan migration music_player terlebih dahulu untuk mengelola lagu.'
+                : 'Daftar lagu gagal dimuat. Periksa koneksi dan hak akses Admin.';
+        }
     }
     async function loadComics() {
         statisticsStatus.textContent = 'Memuat statistik…';
@@ -271,6 +289,50 @@
             if (paths.length) await bucket.remove(paths);
             say(`Gagal menyimpan komik: ${error.message}`, true);
         }
+    });
+    document.getElementById('music-form').addEventListener('submit', async event => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const fields = new FormData(form);
+        const audio = fields.get('audio');
+        const cover = fields.get('cover');
+        if (!audio.size || audio.type !== 'audio/mpeg' || audio.size > 50 * 1024 * 1024) { say('Pilih file MP3 yang valid dengan ukuran maksimal 50 MB.', true); return; }
+        if (cover.size && (!['image/jpeg', 'image/png', 'image/webp'].includes(cover.type) || cover.size > 10 * 1024 * 1024)) { say('Cover harus JPEG, PNG, atau WebP dengan ukuran maksimal 10 MB.', true); return; }
+        const folder = crypto.randomUUID();
+        const audioPath = `${folder}/track.mp3`;
+        let coverPath = null;
+        say('Mengunggah lagu…');
+        try {
+            let result = await musicBucket.upload(audioPath, audio, { upsert: false, contentType: 'audio/mpeg' });
+            if (result.error) throw result.error;
+            if (cover.size) {
+                coverPath = `${folder}/cover.${cover.name.split('.').pop().toLowerCase()}`;
+                result = await musicBucket.upload(coverPath, cover, { upsert: false, contentType: cover.type });
+                if (result.error) throw result.error;
+            }
+            const { error } = await db.from('music_tracks').insert({
+                title: String(fields.get('title')).trim(), artist: String(fields.get('artist') || '').trim(),
+                playlist_key: String(fields.get('playlist_key')), audio_path: audioPath, cover_path: coverPath
+            });
+            if (error) throw error;
+            form.reset(); say('Lagu berhasil ditambahkan ke playlist.'); await loadMusicTracks();
+        } catch (error) {
+            await musicBucket.remove([audioPath, ...(coverPath ? [coverPath] : [])]);
+            say(`Gagal menambahkan lagu: ${error.message || 'periksa migration dan hak akses Supabase.'}`, true);
+        }
+    });
+    musicList.addEventListener('click', async event => {
+        const button = event.target.closest('[data-music-delete]');
+        if (!button) return;
+        if (!window.confirm(`Hapus lagu “${button.dataset.title}” dan file audionya?`)) return;
+        const { data: track, error: readError } = await db.from('music_tracks').select('audio_path,cover_path').eq('id', button.dataset.musicDelete).single();
+        if (readError) { say(`Gagal membaca lagu: ${readError.message}`, true); return; }
+        const { error } = await db.from('music_tracks').delete().eq('id', button.dataset.musicDelete);
+        if (error) { say(`Gagal menghapus lagu: ${error.message}`, true); return; }
+        const paths = [track.audio_path, track.cover_path].filter(Boolean);
+        const { error: storageError } = await musicBucket.remove(paths);
+        say(storageError ? `Data lagu terhapus, tetapi file audionya gagal dihapus: ${storageError.message}` : 'Lagu berhasil dihapus.', Boolean(storageError));
+        await loadMusicTracks();
     });
     list.addEventListener('click', async event => {
         const button = event.target.closest('button[data-action]');
