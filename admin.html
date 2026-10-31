@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#f8f7f4"><title>Admin — Ruang Komik</title><script>try { document.documentElement.dataset.theme = localStorage.getItem('ruang-komik-theme') === 'dark' ? 'dark' : 'light'; } catch (_) { document.documentElement.dataset.theme = 'light'; }</script><link rel="stylesheet" href="styles.css"><script src="theme.js" defer></script><script src="profile.js" defer></script><script src="nav-menu.js" defer></script></head>
-<body>
-    <header class="topbar"><a class="brand" href="komik.html"><span class="brand-mark">R</span><span>ruang<span class="brand-light">komik</span></span></a><nav aria-label="Navigasi utama"><a href="komik.html">Beranda</a><a href="admin.html" aria-current="page">Admin</a><button class="theme-toggle" type="button" data-theme-toggle aria-label="Aktifkan mode gelap" aria-pressed="false">Mode gelap</button></nav></header>
+<body class="admin-page">
+    <header class="topbar"><a class="brand" href="komik.html" aria-label="Ruang Komik, beranda"><img class="brand-logo" src="logo_ruang_Komik.png" alt="Ruang Komik"></a><nav aria-label="Navigasi utama"><a href="komik.html">Beranda</a><button class="theme-toggle" type="button" data-theme-toggle aria-label="Aktifkan mode gelap" aria-pressed="false">Mode gelap</button></nav></header>
     <main class="story-main admin-main"><section class="story-intro"><span class="eyebrow"><span class="eyebrow-dot"></span> Pengelolaan konten</span><h1>Admin Ruang Komik</h1><p>Masuk menggunakan akun Admin Supabase untuk mengelola komik.</p></section>
         <p id="admin-status" class="admin-status" role="status" aria-live="polite"></p>
         <form id="login-form" class="admin-panel"><h2>Masuk</h2><label>Email<input name="email" type="email" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button button-primary" type="submit">Masuk sebagai Admin</button></form>

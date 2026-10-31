@@ -1,10 +1,13 @@
 (function () {
     const nav = document.querySelector('.topbar nav');
     if (!nav) return;
-    const menuItems = [...nav.children].filter(item =>
-        !item.classList.contains('nav-search-wrap') &&
-        !item.classList.contains('reader-profile-trigger')
-    );
+    const isHomePage = document.body.classList.contains('home-page');
+    const menuItems = isHomePage
+        ? [...nav.querySelectorAll(':scope > a[href="komik.html"], :scope > a[data-open-gallery]')]
+        : [...nav.children].filter(item =>
+            !item.classList.contains('nav-search-wrap') &&
+            !item.classList.contains('reader-profile-trigger')
+        );
     if (!menuItems.length) return;
 
     const menu = document.createElement('div');

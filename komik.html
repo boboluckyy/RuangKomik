@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f8f7f4">
-    <meta name="description" content="Temukan cerita sehari-hari dalam komik pilihan Ruang Komik.">
+    <meta name="theme-color" content="#100b0a">
+    <meta name="description" content="Temukan cerita seru, penuh makna, dan inspiratif di Ruang Komik.">
     <title>Ruang Komik — Cerita untuk dinikmati</title>
-    <script>try { document.documentElement.dataset.theme = localStorage.getItem('ruang-komik-theme') === 'dark' ? 'dark' : 'light'; } catch (_) { document.documentElement.dataset.theme = 'light'; }</script>
+    <script>try { document.documentElement.dataset.theme = localStorage.getItem('ruang-komik-theme') || 'dark'; } catch (_) { document.documentElement.dataset.theme = 'dark'; }</script>
     <link rel="stylesheet" href="styles.css">
     <script src="theme.js" defer></script>
     <script src="profile.js" defer></script>
     <script src="nav-menu.js" defer></script>
 </head>
-<body>
+<body class="home-page">
     <header class="topbar">
-        <a class="brand" href="komik.html" aria-label="Ruang Komik, beranda"><span class="brand-mark" aria-hidden="true">R</span><span>ruang<span class="brand-light">komik</span></span></a>
+        <a class="brand" href="komik.html" aria-label="Ruang Komik, beranda"><img class="brand-logo" src="logo_ruang_Komik.png" alt="Ruang Komik"></a>
         <nav aria-label="Navigasi utama">
             <a href="komik.html" aria-current="page">Beranda</a>
-            <a href="admin.html">Admin</a>
+            <a href="#galeri" data-open-gallery>Jelajahi</a>
+            
             <button class="nav-history" id="show-reading-history" type="button" aria-haspopup="dialog" aria-controls="reading-history-dialog">Riwayat</button>
             <button class="theme-toggle" type="button" data-theme-toggle aria-label="Aktifkan mode gelap" aria-pressed="false">Mode gelap</button>
             <div class="nav-search-wrap">
@@ -28,32 +29,58 @@
     </header>
     <main>
         <section class="hero" id="welcome" aria-label="Sambutan Ruang Komik">
+            <div class="hero-floating-pages" aria-hidden="true">
+                <img class="hero-floating-page page-one" src="ruang-komik-page-float-1.png" alt="">
+                <img class="hero-floating-page page-two" src="ruang-komik-page-float-2.png" alt="">
+                <img class="hero-floating-page page-three" src="ruang-komik-page-float-3.png" alt="">
+                <img class="hero-floating-page page-four" src="ruang-komik-page-float-4.png" alt="">
+            </div>
             <div class="hero-copy">
-                <span class="eyebrow"><span class="eyebrow-dot"></span> Ruang cerita</span>
-                <h1>Baca komik,<br><span>sambil belajar.</span></h1>
-                <p>Temukan komik tentang hidup, pengetahuan, dan momen kecil yang berharga.</p>
-                <a class="button button-primary" href="#galeri" id="explore-link">Jelajahi komik <span aria-hidden="true">↗</span></a>
+                <span class="eyebrow"><span class="eyebrow-dot"></span> KOMIK EDUKASI</span>
+                <h1>Baca Komik,<br><span>Sambil Belajar.</span></h1>
+                <p>Temukan cerita seru, penuh makna, dan inspiratif untuk menemani hari-harimu. Komik yang tidak hanya menghibur, tetapi juga menambah wawasan.</p>
+                <div class="hero-actions">
+                    <a class="button button-primary" href="#galeri" id="explore-link">Jelajahi Komik <span aria-hidden="true">↗</span></a>
+                </div>
             </div>
-            <div class="hero-art" aria-hidden="true">
-                <div class="art-orbit"></div><div class="art-note note-one">cerita kecil,<br>amanat besar</div>
-                <div class="art-note note-two">EDISI PILIHAN <span>⭐</span></div>
-                <div class="art-book"><span>RUANG<br>KOMIK</span><i></i><b>01</b></div>
-                <span class="art-spark spark-one">💫</span><span class="art-spark spark-two">?</span>
+            <div class="hero-meta" aria-label="Keunggulan Ruang Komik">
+                <article><span class="hero-meta-icon">▣</span><div><strong>Beragam Cerita</strong><small>Komik pilihan dan terbaru</small></div></article>
+                <article><span class="hero-meta-icon">✦</span><div><strong>Nilai Edukasi</strong><small>Cerita penuh makna</small></div></article>
+                <article><span class="hero-meta-icon">◉</span><div><strong>Untuk Semua</strong><small>Pelajar, mahasiswa, dan umum</small></div></article>
+                <article><span class="hero-meta-icon">♥</span><div><strong>Gratis &amp; Mudah</strong><small>Baca kapan saja, di mana saja</small></div></article>
             </div>
-            <div class="hero-meta"><span>KOLEKSI CERITA PILIHAN</span><span>01 — 02</span></div>
         </section>
-        <section class="gallery-section" id="galeri" aria-label="Daftar komik" hidden>
-            <div class="gallery-greeting" role="status"><span class="eyebrow-dot" aria-hidden="true"></span><p>Halo, selamat datang di Ruang Komik. Yuk, temukan cerita yang kamu suka!</p></div>
-            <section class="gallery-banner" aria-label="Banner Ruang Komik"><img src="banner_KOMIK.jpeg" width="1920" height="1080" alt="Ruang Komik — Komik Edukasi"></section>
-            <div class="gallery-controls" id="gallery-controls" hidden>
-                <label class="gallery-field" for="comic-sort">Urutkan
-                    <select id="comic-sort"><option value="newest">Terbaru</option><option value="alphabetical">Alfabetis</option></select>
-                </label>
-                <p class="gallery-result-count" id="gallery-result-count" role="status" aria-live="polite"></p>
+        <section class="gallery-section" id="galeri" aria-label="Katalog komik" hidden>
+            <div class="gallery-header">
+                <span class="eyebrow"><span class="eyebrow-dot"></span> RUANG KOMIK / KATALOG</span>
+                <h2>Jelajahi Dunia Komik</h2>
+                <p>Temukan bacaan edukatif dengan kisah yang seru, hangat, dan penuh wawasan.</p>
             </div>
-            <div class="container" id="comic-list"><p id="gallery-status" role="status">Memuat komik…</p></div>
-            <section class="featured-section" id="featured-section" aria-labelledby="featured-title" hidden><div class="subsection-heading"><h3 id="featured-title">Komik Unggulan</h3><p>Dipilih oleh Admin Ruang Komik.</p></div><div class="container featured-list" id="featured-comics"></div></section>
-            <section class="popular-section" id="popular-section" aria-labelledby="popular-title" hidden><div class="subsection-heading"><h3 id="popular-title">Komik Populer</h3><p id="popular-status" role="status" aria-live="polite"></p></div><div class="container" id="popular-comics"></div></section>
+            <section class="featured-section" id="featured-section" aria-labelledby="featured-title" hidden>
+                <div class="subsection-heading"><div><span class="catalog-kicker">SOROTAN HARI INI</span><h3 id="featured-title">Cerita Pilihan</h3></div><p>Satu cerita untuk jadi awal petualangan bacamu.</p></div>
+                <div class="container featured-list" id="featured-comics"></div>
+            </section>
+            <section class="catalog-collection" aria-labelledby="collection-title">
+                <div class="subsection-heading"><div><span class="catalog-kicker">TEMUKAN CERITAMU</span><h3 id="collection-title">Komik Pilihan</h3></div><p id="gallery-result-count" class="gallery-result-count" role="status" aria-live="polite"></p></div>
+                <div class="category-filter-wrap" id="category-filters" role="group" aria-label="Filter kategori komik" hidden>
+                    <button type="button" class="category-chip is-active" data-category="Semua" aria-pressed="true">Semua</button>
+                    <button type="button" class="category-chip" data-category="Pendidikan" aria-pressed="false">Pendidikan</button>
+                    <button type="button" class="category-chip" data-category="Religius" aria-pressed="false">Religius</button>
+                    <button type="button" class="category-chip" data-category="Persahabatan" aria-pressed="false">Persahabatan</button>
+                    <button type="button" class="category-chip" data-category="Kehidupan" aria-pressed="false">Kehidupan</button>
+                    <button type="button" class="category-chip" data-category="Pengetahuan" aria-pressed="false">Pengetahuan</button>
+                </div>
+                <div class="gallery-controls" id="gallery-controls" hidden>
+                    <label class="gallery-field" for="comic-sort">Urutkan
+                        <select id="comic-sort"><option value="newest">Terbaru</option><option value="alphabetical">Alfabetis</option></select>
+                    </label>
+                </div>
+                <div class="container" id="comic-list"><p id="gallery-status" role="status">Memuat komik...</p></div>
+            </section>
+            <section class="popular-section" id="popular-section" aria-labelledby="popular-title" hidden>
+                <div class="subsection-heading"><div><span class="catalog-kicker">RAMAI DIBACA</span><h3 id="popular-title">Komik Populer</h3></div><p id="popular-status" role="status" aria-live="polite"></p></div>
+                <div class="container popular-list" id="popular-comics"></div>
+            </section>
             <div class="screen-back"><button type="button" id="welcome-link"><span aria-hidden="true">←</span> Kembali ke beranda</button></div>
         </section>
     </main>
@@ -81,6 +108,7 @@
         const showHistoryButton = document.getElementById('show-reading-history');
         let availableSlugs = null;
         let hasActiveFilter = false;
+        let activeCategory = 'Semua';
         function renderReadingHistory() {
             if (!historyApi) return;
             const entries = historyApi.read();
@@ -139,6 +167,10 @@
             event.preventDefault();
             showGallery();
         });
+        document.querySelectorAll('[data-open-gallery]').forEach(link => link.addEventListener('click', event => {
+            event.preventDefault();
+            showGallery();
+        }));
         document.getElementById('welcome-link').addEventListener('click', showWelcome);
         if (window.location.hash === '#galeri') showGallery();
         (async function loadPublishedComics() {
@@ -174,7 +206,16 @@
             const searchInput = document.getElementById('comic-search');
             const sortSelect = document.getElementById('comic-sort');
             const resultCount = document.getElementById('gallery-result-count');
+            const categoryFilters = document.getElementById('category-filters');
             const categoryOf = comic => comic.category?.trim() || 'Komik';
+            const categoryAliases = {
+                Pendidikan: ['pendidikan', 'edukasi', 'education'],
+                Religius: ['religius', 'religi', 'religion', 'islami', 'islam', 'agama', 'spiritual'],
+                Persahabatan: ['persahabatan', 'friendship', 'pertemanan'],
+                Kehidupan: ['kehidupan', 'life', 'sehari-hari'],
+                Pengetahuan: ['pengetahuan', 'knowledge', 'sains', 'science', 'wawasan']
+            };
+            const matchesCategory = comic => activeCategory === 'Semua' || categoryAliases[activeCategory].some(alias => normalizeSearch(categoryOf(comic)).includes(alias));
             const normalizeSearch = value => String(value ?? '').toLocaleLowerCase('id-ID').trim().replace(/\s+/g, ' ');
             const searchableText = comic => normalizeSearch([comic.title, comic.category, comic.description].filter(Boolean).join(' '));
             const matchesComic = (comic, queryValue = searchInput.value) => {
@@ -191,14 +232,15 @@
                 const age = Date.now() - timestamp;
                 return timestamp !== null && age >= 0 && age <= 30 * 24 * 60 * 60 * 1000;
             };
-            const comicCard = (comic, extra = '') => {
+            const comicCard = (comic, extra = '', variant = '') => {
                 const target = `story.html?slug=${encodeURIComponent(comic.slug)}`;
                 const coverUrl = imageUrl(comic.cover_path);
                 const cover = coverUrl
                     ? `<img src="${escape(coverUrl)}" alt="Sampul komik ${escape(comic.title)}" class="thumbnail" loading="lazy"><span class="cover-fallback" hidden aria-hidden="true">Sampul belum tersedia</span>`
                     : '<span class="cover-fallback" aria-hidden="true">Sampul belum tersedia</span>';
                 const badges = `<div class="card-badges"><span class="tag">${escape(categoryOf(comic))}</span><span class="comic-status">Terbit</span>${isNewComic(comic) ? '<span class="comic-new">Baru</span>' : ''}</div>`;
-                return `<article class="card"><a class="card-image-link" href="${target}" aria-label="Baca komik ${escape(comic.title)}">${cover}<span class="image-arrow" aria-hidden="true">↗</span></a><div class="card-content">${badges}<h3>${escape(comic.title)}</h3><p>${escape(comic.description || 'Buka komik ini untuk menikmati ceritanya.')}</p>${extra}<a href="${target}" class="text-link">Baca Komik <span aria-hidden="true">→</span></a></div></article>`;
+                const actionLabel = variant === 'featured-card' ? 'Baca Sekarang' : 'Baca Komik';
+                return `<article class="card ${variant}"><a class="card-image-link" href="${target}" aria-label="Baca komik ${escape(comic.title)}">${cover}<span class="image-arrow" aria-hidden="true">↗</span></a><div class="card-content">${badges}<h3>${escape(comic.title)}</h3><p>${escape(comic.description || 'Buka komik ini untuk menikmati ceritanya.')}</p>${extra}<a href="${target}" class="text-link">${actionLabel} <span aria-hidden="true">→</span></a></div></article>`;
             };
             const searchSuggestions = document.getElementById('comic-search-results');
             function renderSearchSuggestions() {
@@ -208,7 +250,7 @@
                     searchInput.setAttribute('aria-expanded', 'false');
                     return;
                 }
-                const matches = data.filter(comic => matchesComic(comic)).slice(0, 6);
+                const matches = data.filter(comic => matchesComic(comic) && matchesCategory(comic)).slice(0, 6);
                 if (matches.length === 0) {
                     searchSuggestions.innerHTML = '<p class="search-suggestions-empty">Komik tidak ditemukan.</p>';
                 } else {
@@ -239,15 +281,18 @@
             controls.hidden = false;
 
             const featured = data.filter(comic => comic.is_featured === true);
+            const featuredSelection = [...featured];
+            if (featuredSelection.length === 0 && data.length) featuredSelection.push(data[0]);
             const featuredSection = document.getElementById('featured-section');
-            document.getElementById('featured-comics').innerHTML = featured.map(comic => comicCard(comic)).join('');
+            document.getElementById('featured-comics').innerHTML = featuredSelection.slice(0, 1).map(comic => comicCard(comic, '', 'featured-card')).join('');
+            categoryFilters.hidden = false;
             const popularSection = document.getElementById('popular-section');
 
             function renderFilteredComics() {
-                hasActiveFilter = Boolean(normalizeSearch(searchInput.value));
-                featuredSection.hidden = hasActiveFilter || featured.length === 0;
+                hasActiveFilter = Boolean(normalizeSearch(searchInput.value)) || activeCategory !== 'Semua';
+                featuredSection.hidden = hasActiveFilter || featuredSelection.length === 0;
                 popularSection.hidden = hasActiveFilter || popularSection.dataset.available !== 'true';
-                const visibleComics = data.filter(comic => matchesComic(comic));
+                const visibleComics = data.filter(comic => matchesComic(comic) && matchesCategory(comic));
                 if (sortSelect.value === 'alphabetical') {
                     visibleComics.sort((a, b) => a.title.localeCompare(b.title, 'id', { sensitivity: 'base' }));
                 } else {
@@ -265,10 +310,28 @@
 
             function resetSearch() {
                 searchInput.value = '';
+                activeCategory = 'Semua';
+                categoryFilters.querySelectorAll('[data-category]').forEach(button => {
+                    const selected = button.dataset.category === activeCategory;
+                    button.classList.toggle('is-active', selected);
+                    button.setAttribute('aria-pressed', String(selected));
+                });
                 renderFilteredComics();
                 renderSearchSuggestions();
             }
 
+            categoryFilters.addEventListener('click', event => {
+                const button = event.target.closest('[data-category]');
+                if (!button) return;
+                activeCategory = button.dataset.category;
+                categoryFilters.querySelectorAll('[data-category]').forEach(item => {
+                    const selected = item === button;
+                    item.classList.toggle('is-active', selected);
+                    item.setAttribute('aria-pressed', String(selected));
+                });
+                renderFilteredComics();
+                renderSearchSuggestions();
+            });
             searchInput.addEventListener('input', () => {
                 renderFilteredComics();
                 renderSearchSuggestions();
