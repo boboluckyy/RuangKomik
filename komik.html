@@ -280,9 +280,7 @@
             comicList.replaceChildren();
             controls.hidden = false;
 
-            const featured = data.filter(comic => comic.is_featured === true);
-            const featuredSelection = [...featured];
-            if (featuredSelection.length === 0 && data.length) featuredSelection.push(data[0]);
+            const featuredSelection = data.filter(comic => comic.is_featured === true);
             const featuredSection = document.getElementById('featured-section');
             document.getElementById('featured-comics').innerHTML = featuredSelection.slice(0, 1).map(comic => comicCard(comic, '', 'featured-card')).join('');
             categoryFilters.hidden = false;

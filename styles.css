@@ -397,6 +397,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--focus); outline
 .home-page .text-link { border-color: var(--line); color: var(--green); }
 .home-page footer { border-color: var(--line); }
 .home-page .footer-brand { color: var(--ink); }
+.home-page footer span:first-of-type { cursor: pointer; }
+.home-page footer span:first-of-type:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.home-page .admin-secret-entry { min-height: 34px; margin: 0; padding: 6px 12px; border: 1px solid var(--control-border); border-radius: 999px; background: var(--white); color: var(--green); font: inherit; font-size: .76rem; font-weight: 700; cursor: pointer; }
 @media (min-width: 1500px) { .home-page .hero { min-height: min(850px,calc(100svh - 82px)); } }
 @media (min-width: 701px) and (max-width: 1100px) {
     .home-page .topbar { padding-inline: 4%; gap: 10px; }

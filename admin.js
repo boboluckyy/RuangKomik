@@ -26,6 +26,11 @@
     }
     const db = api.client;
     const bucket = db.storage.from('comic-images');
+    async function clearOtherFeaturedComics(comicId) {
+        const { error } = await db.from('comics').update({ is_featured: false })
+            .eq('is_featured', true).neq('id', comicId);
+        if (error) throw error;
+    }
 
     async function refreshSession() {
         const { data } = await db.auth.getSession();
@@ -197,6 +202,7 @@
                     is_featured: fields.get('publication_status') === 'published' && fields.get('is_featured') === 'on'
                 } : {})
             };
+            if (update.is_featured) await clearOtherFeaturedComics(id);
             if (newCoverPath) update.cover_path = newCoverPath;
             const { error } = await db.from('comics').update(update).eq('id', id).select('id').single();
             if (error) throw error;
@@ -255,6 +261,7 @@
                 const publishUpdate = publicationSchemaAvailable
                     ? { publication_status: 'published', is_featured: featureOnSave }
                     : { is_published: true };
+                if (featureOnSave) await clearOtherFeaturedComics(comic.id);
                 const { error } = await db.from('comics').update(publishUpdate).eq('id', comic.id);
                 if (error) throw error;
             }
@@ -278,8 +285,13 @@
             if (error) say(error.message, true); else { say('Status komik diperbarui.'); await loadComics(); }
         } else if (action === 'feature') {
             if (!publicationSchemaAvailable) { say('Migration fitur komik unggulan belum diterapkan.', true); return; }
-            const { error } = await db.from('comics').update({ is_featured: button.dataset.featured !== 'true' }).eq('id', id).select('id').single();
-            if (error) say(error.message, true); else { say('Status unggulan komik diperbarui.'); await loadComics(); }
+            try {
+                const shouldFeature = button.dataset.featured !== 'true';
+                if (shouldFeature) await clearOtherFeaturedComics(id);
+                const { error } = await db.from('comics').update({ is_featured: shouldFeature }).eq('id', id).select('id').single();
+                if (error) throw error;
+                say('Status unggulan komik diperbarui.'); await loadComics();
+            } catch (error) { say(`Gagal memperbarui unggulan: ${error.message}`, true); }
         } else if (action === 'delete') {
             if (!window.confirm(`Hapus permanen "${button.dataset.title}" beserta semua halaman dan file gambarnya? Tindakan ini tidak dapat dibatalkan.`)) return;
             const { data: comic, error: readError } = await db.from('comics').select('cover_path,comic_pages(image_path)').eq('id', id).single();

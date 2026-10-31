@@ -45,4 +45,38 @@
     document.addEventListener('keydown', event => {
         if (event.key === 'Escape') closeMenu();
     });
+
+    const secretAdminTrigger = document.querySelector('.home-page footer span:nth-of-type(1)');
+    if (isHomePage && secretAdminTrigger) {
+        const secretAdminEntry = document.createElement('button');
+        secretAdminEntry.className = 'admin-secret-entry';
+        secretAdminEntry.type = 'button';
+        secretAdminEntry.textContent = 'Admin';
+        secretAdminEntry.hidden = true;
+        secretAdminTrigger.after(secretAdminEntry);
+        secretAdminTrigger.tabIndex = 0;
+        secretAdminTrigger.setAttribute('role', 'button');
+        secretAdminTrigger.setAttribute('aria-label', 'Informasi hak cipta');
+        let taps = 0;
+        let resetTimer;
+        function countSecretTap() {
+            taps += 1;
+            window.clearTimeout(resetTimer);
+            if (taps >= 7) {
+                secretAdminEntry.hidden = false;
+                taps = 0;
+                secretAdminEntry.focus();
+                return;
+            }
+            resetTimer = window.setTimeout(() => { taps = 0; }, 2500);
+        }
+        secretAdminTrigger.addEventListener('click', countSecretTap);
+        secretAdminTrigger.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                countSecretTap();
+            }
+        });
+        secretAdminEntry.addEventListener('click', () => { window.location.href = 'admin.html'; });
+    }
 })();
