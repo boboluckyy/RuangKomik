@@ -126,7 +126,7 @@
                 const target = `story.html?slug=${encodeURIComponent(entry.slug)}${entry.lastPage ? `&page=${entry.lastPage}` : ''}`;
                 const cover = entry.coverUrl ? `<img src="${window.ruangKomik.escape(entry.coverUrl)}" alt="Sampul ${window.ruangKomik.escape(entry.title)}" loading="lazy">` : '';
                 const resume = isAvailable
-                    ? `<a class="reading-history-resume" href="${target}">${entry.lastPage ? `Lanjutkan Membaca · ${progress}` : 'Mulai Membaca'}</a>`
+                    ? `<a class="reading-history-resume" href="${target}" target="_blank" rel="noopener">${entry.lastPage ? `Lanjutkan Membaca · ${progress}` : 'Mulai Membaca'} <span class="visually-hidden">(membuka tab baru)</span></a>`
                     : '<span class="reading-history-unavailable">Komik tidak tersedia atau tidak sedang terbit.</span>';
                 return `<article class="reading-history-item">${cover}<div class="reading-history-info"><h4>${window.ruangKomik.escape(entry.title)}</h4><p>${progress} · Terakhir dibaca ${window.ruangKomik.escape(dateLabel)}</p>${resume}</div><button class="reading-history-remove" type="button" data-history-remove="${window.ruangKomik.escape(entry.slug)}" aria-label="Hapus riwayat ${window.ruangKomik.escape(entry.title)}">Hapus</button></article>`;
             }).join('');
@@ -241,7 +241,7 @@
                     : '<span class="cover-fallback" aria-hidden="true">Sampul belum tersedia</span>';
                 const badges = `<div class="card-badges"><span class="tag">${escape(categoryOf(comic))}</span><span class="comic-status">Terbit</span>${isNewComic(comic) ? '<span class="comic-new">Baru</span>' : ''}</div>`;
                 const actionLabel = variant === 'featured-card' ? 'Baca Sekarang' : 'Baca Komik';
-                return `<article class="card ${variant}"><a class="card-image-link" href="${target}" aria-label="Baca komik ${escape(comic.title)}">${cover}<span class="image-arrow" aria-hidden="true">↗</span></a><div class="card-content">${badges}<h3>${escape(comic.title)}</h3><p>${escape(comic.description || 'Buka komik ini untuk menikmati ceritanya.')}</p>${extra}<a href="${target}" class="text-link">${actionLabel} <span aria-hidden="true">→</span></a></div></article>`;
+                return `<article class="card ${variant}"><a class="card-image-link" href="${target}" target="_blank" rel="noopener" aria-label="Baca komik ${escape(comic.title)} di tab baru">${cover}<span class="image-arrow" aria-hidden="true">↗</span></a><div class="card-content">${badges}<h3>${escape(comic.title)}</h3><p>${escape(comic.description || 'Buka komik ini untuk menikmati ceritanya.')}</p>${extra}<a href="${target}" target="_blank" rel="noopener" class="text-link">${actionLabel} <span aria-hidden="true">→</span><span class="visually-hidden"> (membuka tab baru)</span></a></div></article>`;
             };
             const searchSuggestions = document.getElementById('comic-search-results');
             function renderSearchSuggestions() {
@@ -260,7 +260,7 @@
                         const cover = coverUrl
                             ? `<img class="search-suggestion-image" src="${escape(coverUrl)}" alt=""><span class="search-suggestion-image-fallback" hidden aria-hidden="true"></span>`
                             : '<span class="search-suggestion-image-fallback" aria-hidden="true"></span>';
-                        return `<a class="search-suggestion-item" role="option" href="story.html?slug=${encodeURIComponent(comic.slug)}">${cover}<span class="search-suggestion-copy"><strong>${escape(comic.title)}</strong><small>${escape(categoryOf(comic))}</small></span></a>`;
+                        return `<a class="search-suggestion-item" role="option" href="story.html?slug=${encodeURIComponent(comic.slug)}" target="_blank" rel="noopener">${cover}<span class="search-suggestion-copy"><strong>${escape(comic.title)}</strong><small>${escape(categoryOf(comic))} · Tab baru</small></span></a>`;
                     }).join('');
                 }
                 searchSuggestions.hidden = false;
