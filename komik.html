@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#100b0a">
+    <meta name="theme-color" content="#f3faf2">
     <meta name="description" content="Temukan cerita seru, penuh makna, dan inspiratif di Ruang Komik.">
     <title>Ruang Komik — Cerita untuk dinikmati</title>
-    <script>try { document.documentElement.dataset.theme = localStorage.getItem('ruang-komik-theme') || 'dark'; } catch (_) { document.documentElement.dataset.theme = 'dark'; }</script>
+    <script>try { document.documentElement.dataset.theme = localStorage.getItem('ruang-komik-theme') || 'light'; } catch (_) { document.documentElement.dataset.theme = 'light'; }</script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="home-refresh.css">
     <script src="theme.js" defer></script>
     <script src="profile.js" defer></script>
     <script src="nav-menu.js" defer></script>
@@ -43,6 +44,7 @@
                     <a class="button button-primary" href="#galeri" id="explore-link">Jelajahi Komik <span aria-hidden="true">↗</span></a>
                 </div>
             </div>
+            <div class="hero-featured" id="hero-featured" hidden aria-label="Komik unggulan"></div>
             <div class="hero-meta" aria-label="Keunggulan Ruang Komik">
                 <article><span class="hero-meta-icon">▣</span><div><strong>Beragam Cerita</strong><small>Komik pilihan dan terbaru</small></div></article>
                 <article><span class="hero-meta-icon">✦</span><div><strong>Nilai Edukasi</strong><small>Cerita penuh makna</small></div></article>
@@ -218,6 +220,14 @@
             };
             const matchesCategory = comic => activeCategory === 'Semua' || categoryAliases[activeCategory].some(alias => normalizeSearch(categoryOf(comic)).includes(alias));
             const normalizeSearch = value => String(value ?? '').toLocaleLowerCase('id-ID').trim().replace(/\s+/g, ' ');
+            const categoryToneOf = category => {
+                const value = normalizeSearch(category);
+                if (/pendidikan|edukasi|education|pengetahuan|knowledge|sains|science/.test(value)) return 'tone-mint';
+                if (/relig|islami|islam|agama|spiritual/.test(value)) return 'tone-lavender';
+                if (/persahabatan|friendship|pertemanan/.test(value)) return 'tone-coral';
+                if (/kehidupan|sehari-hari|life/.test(value)) return 'tone-sun';
+                return 'tone-sky';
+            };
             const searchableText = comic => normalizeSearch([comic.title, comic.category, comic.description].filter(Boolean).join(' '));
             const matchesComic = (comic, queryValue = searchInput.value) => {
                 const text = searchableText(comic);
@@ -239,7 +249,7 @@
                 const cover = coverUrl
                     ? `<img src="${escape(coverUrl)}" alt="Sampul komik ${escape(comic.title)}" class="thumbnail" loading="lazy"><span class="cover-fallback" hidden aria-hidden="true">Sampul belum tersedia</span>`
                     : '<span class="cover-fallback" aria-hidden="true">Sampul belum tersedia</span>';
-                const badges = `<div class="card-badges"><span class="tag">${escape(categoryOf(comic))}</span><span class="comic-status">Terbit</span>${isNewComic(comic) ? '<span class="comic-new">Baru</span>' : ''}</div>`;
+                const badges = `<div class="card-badges"><span class="tag ${categoryToneOf(categoryOf(comic))}">${escape(categoryOf(comic))}</span><span class="comic-status">Terbit</span>${isNewComic(comic) ? '<span class="comic-new">Baru</span>' : ''}</div>`;
                 const actionLabel = variant === 'featured-card' ? 'Baca Sekarang' : 'Baca Komik';
                 return `<article class="card ${variant}"><a class="card-image-link" href="${target}" target="_blank" rel="noopener" aria-label="Baca komik ${escape(comic.title)} di tab baru">${cover}<span class="image-arrow" aria-hidden="true">↗</span></a><div class="card-content">${badges}<h3>${escape(comic.title)}</h3><p>${escape(comic.description || 'Buka komik ini untuk menikmati ceritanya.')}</p>${extra}<a href="${target}" target="_blank" rel="noopener" class="text-link">${actionLabel} <span aria-hidden="true">→</span><span class="visually-hidden"> (membuka tab baru)</span></a></div></article>`;
             };
@@ -283,7 +293,23 @@
 
             const featuredSelection = data.filter(comic => comic.is_featured === true);
             const featuredSection = document.getElementById('featured-section');
+            const featuredComic = featuredSelection[0];
             document.getElementById('featured-comics').innerHTML = featuredSelection.slice(0, 1).map(comic => comicCard(comic, '', 'featured-card')).join('');
+            if (featuredComic) {
+                const heroFeatured = document.getElementById('hero-featured');
+                const target = `story.html?slug=${encodeURIComponent(featuredComic.slug)}`;
+                const coverUrl = imageUrl(featuredComic.cover_path);
+                const cover = coverUrl
+                    ? `<img class="hero-featured-image" src="${escape(coverUrl)}" alt="Sampul komik ${escape(featuredComic.title)}" loading="eager">`
+                    : '<span class="hero-featured-placeholder" aria-hidden="true">📖</span>';
+                const floatingPanels = coverUrl
+                    ? `<img class="hero-comic-panel panel-one" src="${escape(coverUrl)}" alt="" aria-hidden="true" loading="lazy"><img class="hero-comic-panel panel-two" src="${escape(coverUrl)}" alt="" aria-hidden="true" loading="lazy">`
+                    : '';
+                heroFeatured.innerHTML = `<a class="hero-featured-link" href="${target}" target="_blank" rel="noopener" aria-label="Baca komik unggulan ${escape(featuredComic.title)} di tab baru">${cover}<span class="hero-featured-sticker">Pilihan hari ini</span><span class="hero-featured-caption"><span class="hero-featured-category">${escape(categoryOf(featuredComic))}</span><strong>${escape(featuredComic.title)}</strong><span class="hero-featured-action">Baca cerita <span aria-hidden="true">↗</span></span></span></a>${floatingPanels}`;
+                heroFeatured.classList.toggle('no-cover', !coverUrl);
+                heroFeatured.hidden = false;
+                welcome.classList.add('has-featured');
+            }
             categoryFilters.hidden = false;
             const popularSection = document.getElementById('popular-section');
 

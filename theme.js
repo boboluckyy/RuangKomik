@@ -7,12 +7,12 @@
         document.documentElement.dataset.theme = theme;
         document.querySelectorAll('[data-theme-toggle]').forEach(button => {
             const dark = theme === 'dark';
-            button.textContent = dark ? 'Mode terang' : 'Mode gelap';
-            button.setAttribute('aria-label', dark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap');
+            button.textContent = dark ? 'Tema hijau' : 'Mode gelap';
+            button.setAttribute('aria-label', dark ? 'Aktifkan tema hijau' : 'Aktifkan mode gelap');
             button.setAttribute('aria-pressed', String(dark));
         });
         const themeColor = document.querySelector('meta[name="theme-color"]');
-        if (themeColor) themeColor.content = theme === 'dark' ? '#151a17' : '#f8f7f4';
+        if (themeColor) themeColor.content = theme === 'dark' ? '#142a23' : '#f3faf2';
         if (persist) {
             try {
                 localStorage.setItem(storageKey, theme);

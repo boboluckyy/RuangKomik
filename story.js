@@ -1,4 +1,4 @@
-(async function () {
+﻿(async function () {
     const root = document.getElementById('story-content');
     const params = new URLSearchParams(location.search);
     const slug = params.get('slug');
@@ -18,7 +18,7 @@
 
     const pages = (comic.comic_pages || []).sort((a, b) => a.page_number - b.page_number);
     const defaultDescription = 'Baca komik dan cerita pilihan di Ruang Komik.';
-    const pageTitle = `${comic.title} — Ruang Komik`;
+    const pageTitle = `${comic.title} â€” Ruang Komik`;
     const pageDescription = comic.description?.trim() || defaultDescription;
     const coverUrl = imageUrl(comic.cover_path);
     const canonicalUrl = new URL('story.html', location.href);
@@ -37,7 +37,11 @@
     }
     canonical.href = canonicalUrl.href;
 
-    root.innerHTML = `<section class="story-intro"><span class="eyebrow"><span class="eyebrow-dot"></span>${escape(comic.category || 'Cerita pilihan')}</span><h1>${escape(comic.title)}</h1></section>${pages.map(page => `<figure class="comic-frame" data-page="${page.page_number}"><img src="${escape(imageUrl(page.image_path))}" alt="${escape(page.alt_text || `${comic.title}, halaman ${page.page_number}`)}" loading="lazy"></figure>`).join('')}${pages.length > 1 ? '<nav class="comic-page-navigation" id="comic-page-navigation" aria-label="Navigasi halaman komik"><button class="admin-secondary" id="previous-page" type="button">Halaman sebelumnya</button><span id="current-page" aria-live="polite"></span><button class="admin-secondary" id="next-page" type="button">Halaman berikutnya</button></nav>' : ''}<section class="comic-description" aria-label="Deskripsi komik"><h2>Tentang komik ini</h2><p>${escape(comic.description || 'Belum ada deskripsi untuk komik ini.')}</p><div class="story-tools"><button class="button button-primary" id="share-comic" type="button">Bagikan komik</button><span id="share-status" class="story-action-status" role="status" aria-live="polite"></span><details class="comic-report-popover"><summary class="comic-report-trigger">Laporkan masalah</summary><div class="comic-report-popover-panel"></div></details></div></section><section class="comic-report" aria-labelledby="comic-report-title"><h2 id="comic-report-title">Laporkan masalah</h2><p>Beritahu Admin jika ada gambar rusak, halaman hilang, atau urutan yang keliru.</p><form id="comic-report-form"><label for="report-issue">Jenis masalah</label><select id="report-issue" name="issue_type" required><option value="image_broken">Gambar rusak</option><option value="missing_page">Halaman hilang</option><option value="page_order">Urutan halaman salah</option><option value="other">Masalah lainnya</option></select><label for="report-message">Keterangan (10–1200 karakter)</label><textarea id="report-message" name="message" minlength="10" maxlength="1200" rows="4" required></textarea><button class="button button-primary" type="submit">Kirim laporan</button></form><p id="report-status" class="story-action-status" role="status" aria-live="polite"></p></section><div class="bottom-nav"><a class="back" href="komik.html#galeri">← Jelajahi semua komik</a></div>`;
+    const readerPages = pages.map(page => `<figure class="comic-frame" data-page="${page.page_number}"><button class="reader-fullscreen-toggle" type="button" aria-label="Buka layar penuh" aria-pressed="false"><span aria-hidden="true">⛶</span> Layar penuh</button><img src="${escape(imageUrl(page.image_path))}" alt="${escape(page.alt_text || `${comic.title}, halaman ${page.page_number}`)}" loading="lazy"></figure>`).join('');
+    const readerNavigation = pages.length > 1
+        ? '<nav class="comic-page-navigation" id="comic-page-navigation" aria-label="Navigasi halaman komik"><button class="admin-secondary" id="previous-page" type="button" aria-label="Halaman sebelumnya"><span class="reader-slide-label">Halaman sebelumnya</span><span class="reader-slide-icon" aria-hidden="true">‹</span></button><span id="current-page" aria-live="polite"></span><button class="admin-secondary" id="next-page" type="button" aria-label="Halaman berikutnya"><span class="reader-slide-label">Halaman berikutnya</span><span class="reader-slide-icon" aria-hidden="true">›</span></button></nav>'
+        : '';
+    root.innerHTML = `<section class="story-intro"><span class="eyebrow"><span class="eyebrow-dot"></span>${escape(comic.category || 'Cerita pilihan')}</span><h1>${escape(comic.title)}</h1></section><section class="comic-reader" id="comic-reader" aria-label="Pembaca komik">${readerPages}${readerNavigation}</section><section class="comic-description" aria-label="Deskripsi komik"><h2>Tentang komik ini</h2><p>${escape(comic.description || 'Belum ada deskripsi untuk komik ini.')}</p><div class="story-tools"><button class="button button-primary" id="share-comic" type="button">Bagikan komik</button><span id="share-status" class="story-action-status" role="status" aria-live="polite"></span><details class="comic-report-popover"><summary class="comic-report-trigger">Laporkan masalah</summary><div class="comic-report-popover-panel"></div></details></div></section><section class="comic-report" aria-labelledby="comic-report-title"><h2 id="comic-report-title">Laporkan masalah</h2><p>Beritahu Admin jika ada gambar rusak, halaman hilang, atau urutan yang keliru.</p><form id="comic-report-form"><label for="report-issue">Jenis masalah</label><select id="report-issue" name="issue_type" required><option value="image_broken">Gambar rusak</option><option value="missing_page">Halaman hilang</option><option value="page_order">Urutan halaman salah</option><option value="other">Masalah lainnya</option></select><label for="report-message">Keterangan (10–1200 karakter)</label><textarea id="report-message" name="message" minlength="10" maxlength="1200" rows="4" required></textarea><button class="button button-primary" type="submit">Kirim laporan</button></form><p id="report-status" class="story-action-status" role="status" aria-live="polite"></p></section><div class="bottom-nav"><a class="back" href="komik.html#galeri">← Jelajahi semua komik</a></div>`;
 
     const reportPopoverPanel = root.querySelector(".comic-report-popover-panel");
     const reportSection = root.querySelector(".comic-report");
@@ -53,16 +57,24 @@
 
     const frames = [...root.querySelectorAll('.comic-frame[data-page]')];
     let currentIndex = Math.max(0, frames.findIndex(frame => Number(frame.dataset.page) === startPage));
-    const resumeFrame = frames[currentIndex];
-    if (resumeFrame && requestedPage === startPage && startPage !== pages[0]?.page_number) {
-        resumeFrame.scrollIntoView({ block: 'start' });
-    }
+    document.body.classList.toggle('reader-slides', frames.length > 1);
+    const comicReader = document.getElementById('comic-reader');
     const currentPage = document.getElementById('current-page');
     const previousPage = document.getElementById('previous-page');
     const nextPage = document.getElementById('next-page');
-    function setCurrentIndex(index) {
+    const fullscreenButtons = [...document.querySelectorAll('.reader-fullscreen-toggle')];
+    function setCurrentIndex(index, direction = 0) {
         if (!frames.length) return;
         currentIndex = Math.max(0, Math.min(index, frames.length - 1));
+        frames.forEach((frame, frameIndex) => {
+            const active = frameIndex === currentIndex;
+            frame.hidden = !active;
+            frame.classList.toggle('is-active', active);
+            frame.classList.remove('slide-from-next', 'slide-from-previous');
+            frame.setAttribute('aria-hidden', String(!active));
+        });
+        if (direction > 0) frames[currentIndex].classList.add('slide-from-next');
+        if (direction < 0) frames[currentIndex].classList.add('slide-from-previous');
         const pageNumber = Number(frames[currentIndex].dataset.page);
         if (currentPage) currentPage.textContent = `Halaman ${currentIndex + 1} dari ${frames.length}`;
         if (previousPage) previousPage.disabled = currentIndex === 0;
@@ -72,37 +84,76 @@
     setCurrentIndex(currentIndex);
 
     if (previousPage && nextPage) {
-        previousPage.addEventListener('click', () => frames[Math.max(0, currentIndex - 1)].scrollIntoView({ behavior: 'smooth', block: 'start' }));
-        nextPage.addEventListener('click', () => frames[Math.min(frames.length - 1, currentIndex + 1)].scrollIntoView({ behavior: 'smooth', block: 'start' }));
+        previousPage.addEventListener('click', () => setCurrentIndex(currentIndex - 1, -1));
+        nextPage.addEventListener('click', () => setCurrentIndex(currentIndex + 1, 1));
     }
-    if (frames.length) {
-        let scheduled = false;
-        function updateVisiblePage() {
-            scheduled = false;
-            const viewportCenter = window.innerHeight / 2;
-            let closestIndex = 0;
-            let closestDistance = Infinity;
-            frames.forEach((frame, index) => {
-                const rect = frame.getBoundingClientRect();
-                const distance = rect.top <= viewportCenter && rect.bottom >= viewportCenter
-                    ? 0
-                    : Math.min(Math.abs(rect.top - viewportCenter), Math.abs(rect.bottom - viewportCenter));
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestIndex = index;
-                }
-            });
-            setCurrentIndex(closestIndex);
-        }
-        function schedulePageUpdate() {
-            if (scheduled) return;
-            scheduled = true;
-            window.requestAnimationFrame(updateVisiblePage);
-        }
-        window.addEventListener('scroll', schedulePageUpdate, { passive: true });
-        window.addEventListener('resize', schedulePageUpdate);
-        frames.forEach(frame => frame.querySelector('img')?.addEventListener('load', schedulePageUpdate));
-        schedulePageUpdate();
+    function syncFullscreenButton() {
+        if (!fullscreenButtons.length) return;
+        const active = document.fullscreenElement === comicReader || comicReader.classList.contains('reader-fullscreen');
+        fullscreenButtons.forEach(button => {
+            button.innerHTML = `<span aria-hidden="true">⛶</span> ${active ? 'Keluar layar penuh' : 'Layar penuh'}`;
+            button.setAttribute('aria-label', active ? 'Keluar dari layar penuh' : 'Buka layar penuh');
+            button.setAttribute('aria-pressed', String(active));
+        });
+    }
+    if (fullscreenButtons.length && comicReader) {
+        fullscreenButtons.forEach(fullscreenButton => fullscreenButton.addEventListener('click', async () => {
+            if (document.fullscreenElement === comicReader) {
+                try { await document.exitFullscreen(); } catch (_) { /* The browser may already have exited fullscreen. */ }
+                return;
+            }
+            if (comicReader.classList.contains('reader-fullscreen')) {
+                comicReader.classList.remove('reader-fullscreen');
+                document.body.classList.remove('reader-fullscreen-open');
+                syncFullscreenButton();
+                return;
+            }
+            if (comicReader.requestFullscreen) {
+                try {
+                    await comicReader.requestFullscreen();
+                    return;
+                } catch (_) { /* Use the in-page fullscreen fallback if browser fullscreen is unavailable. */ }
+            }
+            comicReader.classList.add('reader-fullscreen');
+            document.body.classList.add('reader-fullscreen-open');
+            syncFullscreenButton();
+        }));
+        document.addEventListener('fullscreenchange', syncFullscreenButton);
+        document.addEventListener('keydown', event => {
+            if (event.key !== 'Escape' || !comicReader.classList.contains('reader-fullscreen')) return;
+            comicReader.classList.remove('reader-fullscreen');
+            document.body.classList.remove('reader-fullscreen-open');
+            syncFullscreenButton();
+        });
+    }
+    if (frames.length > 1) {
+        let touchStart = null;
+        frames.forEach(frame => {
+            frame.addEventListener('touchstart', event => {
+                const touch = event.changedTouches[0];
+                touchStart = { x: touch.clientX, y: touch.clientY };
+            }, { passive: true });
+            frame.addEventListener('touchend', event => {
+                if (!touchStart) return;
+                const touch = event.changedTouches[0];
+                const deltaX = touch.clientX - touchStart.x;
+                const deltaY = touch.clientY - touchStart.y;
+                touchStart = null;
+                if (Math.abs(deltaX) < 48 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) return;
+                const direction = deltaX < 0 ? 1 : -1;
+                setCurrentIndex(currentIndex + direction, direction);
+            }, { passive: true });
+        });
+        window.addEventListener('keydown', event => {
+            if (event.altKey || event.ctrlKey || event.metaKey || event.target.closest('input, textarea, select, [contenteditable="true"]')) return;
+            if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                setCurrentIndex(currentIndex + 1, 1);
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                setCurrentIndex(currentIndex - 1, -1);
+            }
+        });
     }
 
     const readCounterKey = `ruang-komik-counted-${comic.id}`;
@@ -168,11 +219,11 @@
         const fields = new FormData(reportForm);
         const message = String(fields.get('message') || '').trim();
         if (message.length < 10 || message.length > 1200) {
-            reportStatus.textContent = 'Keterangan harus terdiri dari 10–1200 karakter.';
+            reportStatus.textContent = 'Keterangan harus terdiri dari 10â€“1200 karakter.';
             return;
         }
         reportForm.querySelector('button[type="submit"]').disabled = true;
-        reportStatus.textContent = 'Mengirim laporan…';
+        reportStatus.textContent = 'Mengirim laporanâ€¦';
         try {
             const { error: reportError } = await client.from('comic_reports').insert({
                 comic_id: comic.id,
@@ -205,3 +256,4 @@
         element.content = value;
     }
 }());
+
