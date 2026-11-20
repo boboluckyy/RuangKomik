@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f3faf2">
+    <meta name="theme-color" content="#103B49">
     <meta name="description" content="Temukan cerita seru, penuh makna, dan inspiratif di Ruang Komik.">
     <title>Ruang Komik — Cerita untuk dinikmati</title>
-    <script>try { document.documentElement.dataset.theme = localStorage.getItem('ruang-komik-theme') || 'light'; } catch (_) { document.documentElement.dataset.theme = 'light'; }</script>
+    <script>document.documentElement.dataset.theme = 'light';</script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="home-refresh.css">
     <script src="theme.js" defer></script>
@@ -21,7 +21,7 @@
             <a href="#galeri" data-open-gallery>Jelajahi</a>
             
             <button class="nav-history" id="show-reading-history" type="button" aria-haspopup="dialog" aria-controls="reading-history-dialog">Riwayat</button>
-            <button class="theme-toggle" type="button" data-theme-toggle aria-label="Aktifkan mode gelap" aria-pressed="false">Mode gelap</button>
+            
             <div class="nav-search-wrap">
                 <label class="nav-search"><span class="visually-hidden">Cari judul atau kategori komik</span><input id="comic-search" type="search" placeholder="Cari judul atau kategori" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="comic-search-results" aria-expanded="false"></label>
                 <div class="search-suggestions" id="comic-search-results" role="listbox" aria-label="Hasil pencarian" hidden></div>
